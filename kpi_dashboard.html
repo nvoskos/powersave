@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Energy Observatory - PowerSave</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; }
+        .neon-text { text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- TOP NAVIGATION -->
+    <nav class="border-b border-gray-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-600 p-2 rounded-lg"><i data-lucide="activity" class="w-5 h-5 text-white"></i></div>
+                    <span class="font-black text-xl tracking-tight text-white">POWERSAVE <span class="text-blue-500 font-normal">OBSERVATORY</span></span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="flex items-center gap-2 text-xs font-bold text-green-400 bg-green-900/30 px-3 py-1 rounded-full border border-green-800">
+                        <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        LIVE GRID DATA
+                    </span>
+                    <div class="text-right hidden sm:block">
+                        <div class="text-xs text-gray-400">ΕΘΝΙΚΟΣ ΣΤΟΧΟΣ NECP</div>
+                        <div class="text-sm font-bold">2021 - 2030</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
+
+        <!-- HEADER STATS (THE BIG NUMBERS) -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Metric 1: Energy Poverty (Measure 18) -->
+            <div class="glass-panel p-6 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition duration-500"><i data-lucide="target" class="w-16 h-16 text-blue-400"></i></div>
+                <div class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">ΣΤΟΧΟΣ ΕΝΕΡΓΕΙΑΚΗΣ ΦΤΩΧΕΙΑΣ</div>
+                <div class="text-sm text-gray-400 mb-4">NECP Annex 8 - Measure 18</div>
+                <div class="flex items-end gap-2">
+                    <span class="text-4xl font-black text-white">12.4</span>
+                    <span class="text-sm text-gray-400 mb-2">/ 52.7 ktoe</span>
+                </div>
+                <div class="w-full bg-gray-700 h-1.5 rounded-full mt-4 overflow-hidden">
+                    <div class="bg-blue-500 h-full rounded-full" style="width: 23%"></div>
+                </div>
+                <div class="text-xs text-blue-300 mt-2 font-bold">23% Επίτευξη Στόχου</div>
+            </div>
+
+            <!-- Metric 2: Peak Shaving -->
+            <div class="glass-panel p-6 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition duration-500"><i data-lucide="zap-off" class="w-16 h-16 text-yellow-400"></i></div>
+                <div class="text-xs font-bold text-yellow-400 uppercase tracking-widest mb-1">ΜΕΙΩΣΗ ΑΙΧΜΗΣ (PEAK)</div>
+                <div class="text-sm text-gray-400 mb-4">Behavioral Demand Response</div>
+                <div class="flex items-end gap-2">
+                    <span class="text-4xl font-black text-white">4.8</span>
+                    <span class="text-sm text-gray-400 mb-2">MW</span>
+                </div>
+                <div class="mt-4 text-xs text-green-400 flex items-center gap-1">
+                    <i data-lucide="trending-down" class="w-3 h-3"></i> -1.2% από χθες
+                </div>
+                <div class="text-xs text-gray-500 mt-1">Ισοδύναμο: 1.5 Ανεμογεννήτριες</div>
+            </div>
+
+            <!-- Metric 3: National Savings -->
+            <div class="glass-panel p-6 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition duration-500"><i data-lucide="piggy-bank" class="w-16 h-16 text-green-400"></i></div>
+                <div class="text-xs font-bold text-green-400 uppercase tracking-widest mb-1">ΣΥΝΟΛΙΚΗ ΕΞΟΙΚΟΝΟΜΗΣΗ</div>
+                <div class="text-sm text-gray-400 mb-4">Οικονομικό Όφελος Πολιτών</div>
+                <div class="flex items-end gap-2">
+                    <span class="text-4xl font-black text-white">€ 284k</span>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <span class="bg-green-500/20 text-green-400 px-2 py-1 rounded text-[10px] font-bold">148k Τέλη</span>
+                    <span class="bg-orange-500/20 text-orange-400 px-2 py-1 rounded text-[10px] font-bold">136k Δωρεές</span>
+                </div>
+            </div>
+
+            <!-- Metric 4: Active Households -->
+            <div class="glass-panel p-6 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition duration-500"><i data-lucide="home" class="w-16 h-16 text-purple-400"></i></div>
+                <div class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-1">ΕΝΕΡΓΑ ΝΟΙΚΟΚΥΡΙΑ</div>
+                <div class="text-sm text-gray-400 mb-4">Ψηφιακή Εμπλοκή</div>
+                <div class="flex items-end gap-2">
+                    <span class="text-4xl font-black text-white">12,450</span>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-2 text-center">
+                    <div class="bg-gray-800 rounded p-1">
+                        <div class="text-[10px] text-gray-500">ΕΥΑΛΩΤΟΙ</div>
+                        <div class="text-xs font-bold text-white">3,200</div>
+                    </div>
+                    <div class="bg-gray-800 rounded p-1">
+                        <div class="text-[10px] text-gray-500">ΓΕΝΙΚΟΙ</div>
+                        <div class="text-xs font-bold text-white">9,250</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CHARTS AREA -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- NECP Trajectory Chart -->
+            <div class="glass-panel p-6 lg:col-span-2">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Πορεία Επίτευξης Στόχων NECP (ktoe)</h3>
+                        <p class="text-xs text-gray-400">Πραγματική Εξοικονόμηση vs Στόχος Κύπρου 2030</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-blue-400"><div class="w-2 h-2 rounded-full bg-blue-500"></div> Στόχος</span>
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-green-400"><div class="w-2 h-2 rounded-full bg-green-500"></div> Πραγματικό</span>
+                    </div>
+                </div>
+                <div class="h-64 w-full">
+                    <canvas id="necpChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Regional Breakdown -->
+            <div class="glass-panel p-0 overflow-hidden">
+                <div class="p-4 border-b border-gray-700 bg-gray-800/50">
+                    <h3 class="font-bold text-white">Κατάταξη Δήμων</h3>
+                    <p class="text-xs text-gray-400">Βάσει συμμετοχής στο Σύμφωνο Δημάρχων</p>
+                </div>
+                <div class="divide-y divide-gray-700">
+                    <div class="p-4 flex items-center justify-between hover:bg-white/5 transition cursor-pointer">
+                        <div class="flex items-center gap-3">
+                            <div class="text-yellow-400 font-black text-lg">1</div>
+                            <div>
+                                <div class="text-sm font-bold text-white">Λευκωσία</div>
+                                <div class="text-[10px] text-gray-400">4,500 active users</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-bold text-green-400">42%</div>
+                            <div class="text-[10px] text-gray-500">ΣΤΟΧΟΣ</div>
+                        </div>
+                    </div>
+                    <div class="p-4 flex items-center justify-between hover:bg-white/5 transition cursor-pointer">
+                        <div class="flex items-center gap-3">
+                            <div class="text-gray-400 font-black text-lg">2</div>
+                            <div>
+                                <div class="text-sm font-bold text-white">Στρόβολος</div>
+                                <div class="text-[10px] text-gray-400">3,200 active users</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-bold text-green-400">38%</div>
+                            <div class="text-[10px] text-gray-500">ΣΤΟΧΟΣ</div>
+                        </div>
+                    </div>
+                    <div class="p-4 flex items-center justify-between hover:bg-white/5 transition cursor-pointer">
+                        <div class="flex items-center gap-3">
+                            <div class="text-orange-400 font-black text-lg">3</div>
+                            <div>
+                                <div class="text-sm font-bold text-white">Αγλαντζιά</div>
+                                <div class="text-[10px] text-gray-400">2,100 active users</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-bold text-green-400">35%</div>
+                            <div class="text-[10px] text-gray-500">ΣΤΟΧΟΣ</div>
+                        </div>
+                    </div>
+                    <div class="p-4 flex items-center justify-between hover:bg-white/5 transition cursor-pointer">
+                        <div class="flex items-center gap-3">
+                            <div class="text-gray-600 font-black text-lg">4</div>
+                            <div>
+                                <div class="text-sm font-bold text-white">Λεμεσός</div>
+                                <div class="text-[10px] text-gray-400">1,800 active users</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-bold text-green-400">22%</div>
+                            <div class="text-[10px] text-gray-500">ΣΤΟΧΟΣ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM SECTION: Impact Blocks -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- CO2 Calculator -->
+            <div class="glass-panel p-6 border-t-4 border-green-500">
+                <h4 class="text-xs font-bold text-green-400 uppercase mb-4">ΠΕΡΙΒΑΛΛΟΝΤΙΚΟ ΟΦΕΛΟΣ</h4>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-3xl font-black">2,450</div>
+                    <i data-lucide="cloud-off" class="w-8 h-8 text-gray-500"></i>
+                </div>
+                <p class="text-sm text-gray-400">Τόνοι CO2 που δεν εκλύθηκαν στην ατμόσφαιρα.</p>
+                <div class="mt-4 pt-4 border-t border-gray-700 flex items-center gap-2">
+                    <i data-lucide="trees" class="w-4 h-4 text-green-500"></i>
+                    <span class="text-xs text-gray-300">Ισοδυναμεί με <strong>12,500 δέντρα</strong></span>
+                </div>
+            </div>
+
+            <!-- Solidarity Fund -->
+            <div class="glass-panel p-6 border-t-4 border-orange-500">
+                <h4 class="text-xs font-bold text-orange-400 uppercase mb-4">ΚΟΙΝΩΝΙΚΗ ΣΥΝΟΧΗ</h4>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-3xl font-black">€ 42,100</div>
+                    <i data-lucide="users" class="w-8 h-8 text-gray-500"></i>
+                </div>
+                <p class="text-sm text-gray-400">Διαθέσιμα για επιδότηση λογαριασμών (Διατίμηση 08).</p>
+                <div class="mt-4 pt-4 border-t border-gray-700 flex items-center gap-2">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-orange-500"></i>
+                    <span class="text-xs text-gray-300">Κάλυψη <strong>2 μηνών</strong> για 350 οικογένειες</span>
+                </div>
+            </div>
+
+            <!-- Grid Health -->
+            <div class="glass-panel p-6 border-t-4 border-blue-500">
+                <h4 class="text-xs font-bold text-blue-400 uppercase mb-4">ΚΑΤΑΣΤΑΣΗ ΔΙΚΤΥΟΥ (ΤΩΡΑ)</h4>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-3xl font-black text-green-400">STABLE</div>
+                    <div class="animate-pulse w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-gray-400">Συμμετοχή PowerSave</span>
+                        <span class="text-white font-bold">12% του Peak</span>
+                    </div>
+                    <div class="w-full bg-gray-700 h-1.5 rounded-full">
+                        <div class="bg-blue-500 h-full rounded-full" style="width: 12%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        const ctx = document.getElementById('necpChart').getContext('2d');
+        
+        // Gradient for Line Chart
+        const gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientBlue.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
+        gradientBlue.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
+        const gradientGreen = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientGreen.addColorStop(0, 'rgba(34, 197, 94, 0.5)');
+        gradientGreen.addColorStop(1, 'rgba(34, 197, 94, 0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['2021', '2022', '2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'],
+                datasets: [
+                    {
+                        label: 'Στόχος ΕΣΕΚ (Cumulative Target)',
+                        data: [5, 12, 22, 35, 52, 75, 105, 140, 190, 349], // Exponential growth curve for target
+                        borderColor: '#3b82f6', // Blue
+                        backgroundColor: gradientBlue,
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Πραγματική Εξοικονόμηση (Actual)',
+                        data: [6, 14, 25, 42, 65, null, null, null, null, null], // Current performance beating target
+                        borderColor: '#22c55e', // Green
+                        backgroundColor: gradientGreen,
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#ffffff'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#cbd5e1',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#64748b' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#64748b' }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+    </script>
+</body>
+</html>
