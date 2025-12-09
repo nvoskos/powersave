@@ -1,0 +1,27 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Server",
+			"type": "shell",
+			"command": "python -m http.server 8000",
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"isBackground": true
+		},
+		{
+			"label": "Start Flask Server",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"server.py"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

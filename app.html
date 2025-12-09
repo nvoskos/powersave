@@ -28,6 +28,16 @@
         /* Invoice Modal Styles */
         .invoice-line { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #e5e7eb; font-size: 12px; }
         .invoice-total { display: flex; justify-content: space-between; padding: 12px 0; font-weight: bold; font-size: 16px; border-top: 2px solid #1f2937; margin-top: 8px; }
+
+        /* Chat Styles */
+        .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 16px; font-size: 13px; margin-bottom: 10px; line-height: 1.4; position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .chat-user { background-color: #2563eb; color: white; align-self: flex-end; border-bottom-right-radius: 4px; margin-left: auto; }
+        .chat-ai { background-color: white; color: #1f2937; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .typing-indicator span { display: inline-block; width: 6px; height: 6px; background-color: #9ca3af; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; margin: 0 1px; }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.8) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -225,6 +235,29 @@
                 </div>
             </div>
 
+            <!-- TAB 6: AI ADVISOR -->
+            <div id="tab-ai" class="hidden-tab h-full flex flex-col pb-20">
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4 flex items-center gap-3">
+                    <div class="bg-white p-2 rounded-full shadow-sm text-blue-600"><i data-lucide="bot" class="w-6 h-6"></i></div>
+                    <div>
+                        <h3 class="font-bold text-blue-900 text-sm">PowerSave AI Advisor</h3>
+                        <p class="text-[10px] text-blue-700">Ρώτησέ με για εξοικονόμηση!</p>
+                    </div>
+                </div>
+
+                <div id="chat-container" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4 flex flex-col min-h-[300px]">
+                    <!-- Initial Message -->
+                    <div class="chat-bubble chat-ai">
+                        Γεια σου! 👋 Είμαι ο προσωπικός σου σύμβουλος ενέργειας. Πώς μπορώ να σε βοηθήσω να μειώσεις τον λογαριασμό σου σήμερα;
+                    </div>
+                </div>
+
+                <div class="mt-auto bg-white p-2 rounded-xl border border-gray-200 flex gap-2 shadow-sm">
+                    <input type="text" id="chat-input" placeholder="Γράψε την ερώτησή σου..." class="flex-1 text-sm bg-transparent border-none outline-none px-2" onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <button onclick="sendMessage()" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition"><i data-lucide="send" class="w-4 h-4"></i></button>
+                </div>
+            </div>
+
         </div>
 
         <!-- FOOTER -->
@@ -248,6 +281,10 @@
              <button onclick="showTab('kids')" id="btn-kids" class="flex flex-col items-center gap-1 text-gray-400 transition-colors">
                 <i data-lucide="baby" class="w-6 h-6"></i>
                 <span class="text-[10px] font-bold">Kids</span>
+            </button>
+             <button onclick="showTab('ai')" id="btn-ai" class="flex flex-col items-center gap-1 text-gray-400 transition-colors">
+                <i data-lucide="bot" class="w-6 h-6"></i>
+                <span class="text-[10px] font-bold">AI</span>
             </button>
         </div>
 
@@ -310,7 +347,7 @@
         let currentPoints = 0;
 
         function showTab(tabName) {
-            const tabs = ['home', 'wallet', 'groups', 'esg', 'kids'];
+            const tabs = ['home', 'wallet', 'groups', 'esg', 'kids', 'ai'];
             
             // Theme Logic
             const headerBg = document.getElementById('header-bg');
@@ -338,6 +375,7 @@
             else if (tabName === 'groups') { pageTitle.innerText = "Οι Ομάδες μου 👥"; pageSubtitle.innerText = "Συλλογική Εξοικονόμηση"; }
             else if (tabName === 'esg') { pageTitle.innerText = "ESG Dashboard 📊"; pageSubtitle.innerText = "Corporate Impact"; }
             else if (tabName === 'kids') { pageTitle.innerText = "PowerSave Kids 🧸"; pageSubtitle.innerText = "Παίξε & Μάθε"; }
+            else if (tabName === 'ai') { pageTitle.innerText = "AI Advisor 🤖"; pageSubtitle.innerText = "Εξυπνη Εξοικονόμηση"; }
             lucide.createIcons();
         }
 
@@ -405,6 +443,50 @@
                     setTimeout(() => treeContainer.style.transform = "scale(1)", 300);
                 }, 500);
             }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            // Add User Message
+            const container = document.getElementById('chat-container');
+            const userBubble = document.createElement('div');
+            userBubble.className = 'chat-bubble chat-user';
+            userBubble.innerText = text;
+            container.appendChild(userBubble);
+            
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+
+            // Show Typing Indicator
+            const typingBubble = document.createElement('div');
+            typingBubble.className = 'chat-bubble chat-ai typing-indicator';
+            typingBubble.id = 'typing-indicator';
+            typingBubble.innerHTML = '<span></span><span></span><span></span>';
+            container.appendChild(typingBubble);
+            container.scrollTop = container.scrollHeight;
+
+            // Simulate Response
+            setTimeout(() => {
+                container.removeChild(typingBubble);
+                const aiBubble = document.createElement('div');
+                aiBubble.className = 'chat-bubble chat-ai';
+                aiBubble.innerHTML = simulateAIResponse(text);
+                container.appendChild(aiBubble);
+                container.scrollTop = container.scrollHeight;
+            }, 1500);
+        }
+
+        function simulateAIResponse(text) {
+            text = text.toLowerCase();
+            if (text.includes('γεια') || text.includes('hello')) return 'Γεια σου! Πώς μπορώ να βοηθήσω με την εξοικονόμηση ενέργειας σήμερα;';
+            if (text.includes('λογαριασμ') || text.includes('bill')) return 'Ο τρέχων λογαριασμός σου είναι <strong>€197.00</strong>. Αν μειώσεις την κατανάλωση κατά 10% αυτό το μήνα, θα κερδίσεις €12.50 έκπτωση στα τέλη σκυβάλων!';
+            if (text.includes('θερμοσιφ') || text.includes('water')) return 'Ο θερμοσίφωνας είναι μεγάλος καταναλωτής! 💡 <strong>Tip:</strong> Ρύθμισέ τον στους 60°C και άναβέ τον μόνο 30 λεπτά πριν το μπάνιο.';
+            if (text.includes('κλιματισ') || text.includes('ac') || text.includes('a/c')) return 'Για μέγιστη οικονομία, ρύθμισε το κλιματιστικό στους <strong>26°C</strong> το καλοκαίρι και στους <strong>21°C</strong> το χειμώνα. Κάθε βαθμός διαφορά αυξάνει την κατανάλωση κατά 7%!';
+            if (text.includes('ψυγει') || text.includes('fridge')) return 'Το ψυγείο δουλεύει 24/7. Βεβαιώσου ότι δεν είναι δίπλα στο φούρνο και ότι τα λάστιχα της πόρτας εφαρμόζουν καλά.';
+            return 'Ενδιαφέρουσα ερώτηση! Για να μειώσεις την κατανάλωση, ξεκίνα κλείνοντας τις συσκευές από την πρίζα (standby) και αντικαθιστώντας τις λάμπες με LED. Θες να σου πω για κάποια συγκεκριμένη συσκευή;';
         }
     </script>
 </body>
