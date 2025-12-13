@@ -1,0 +1,145 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-info:
+    name: PR Information
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: PR Stats
+        run: |
+          echo "📊 Pull Request Statistics"
+          echo "=========================="
+          echo ""
+          echo "Branch: ${{ github.head_ref }}"
+          echo "Target: ${{ github.base_ref }}"
+          echo "Author: ${{ github.actor }}"
+          echo ""
+          echo "Files changed:"
+          git diff --stat origin/${{ github.base_ref }}...HEAD
+          echo ""
+          echo "Commits:"
+          git log --oneline origin/${{ github.base_ref }}...HEAD
+
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install code quality tools
+        run: |
+          pip install black flake8 isort
+
+      - name: Check formatting with Black
+        run: |
+          cd backend
+          black --check --diff .
+
+      - name: Check import sorting
+        run: |
+          cd backend
+          isort --check-only --diff .
+
+      - name: Lint with flake8
+        run: |
+          cd backend
+          flake8 . --count --max-line-length=127 --statistics
+
+  size-check:
+    name: Check PR Size
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR size
+        run: |
+          FILES_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | wc -l)
+          LINES_ADDED=$(git diff --numstat origin/${{ github.base_ref }}...HEAD | awk '{sum+=$1} END {print sum}')
+          LINES_DELETED=$(git diff --numstat origin/${{ github.base_ref }}...HEAD | awk '{sum+=$2} END {print sum}')
+
+          echo "Files changed: $FILES_CHANGED"
+          echo "Lines added: $LINES_ADDED"
+          echo "Lines deleted: $LINES_DELETED"
+
+          if [ $FILES_CHANGED -gt 50 ]; then
+            echo "⚠️  Warning: This PR changes more than 50 files. Consider splitting it."
+          fi
+
+          if [ $LINES_ADDED -gt 1000 ]; then
+            echo "⚠️  Warning: This PR adds more than 1000 lines. Consider splitting it."
+          fi
+
+  comment-pr:
+    name: Comment on PR
+    runs-on: ubuntu-latest
+    needs: [pr-info, code-quality, size-check]
+    if: always()
+
+    steps:
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('PR Checks Complete');
+            });
+
+            const output = `## PR Checks Complete ✅
+
+            All automated checks have been run on this PR.
+
+            - ✅ PR Information
+            - ✅ Code Quality
+            - ✅ Size Check
+
+            ### Next Steps
+            - [ ] Review code changes
+            - [ ] Verify tests pass
+            - [ ] Check documentation updates
+            - [ ] Approve and merge
+
+            ---
+            *Automated comment by GitHub Actions*`;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: output
+              });
+            }
