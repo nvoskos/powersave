@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerSave - Waste Fee Offset</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); }
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .notification-badge {
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .session-active {
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+        }
+
+        .double-points {
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+        }
+    </style>
+</head>
+<body class="text-white p-4 md:p-8">
+
+    <!-- HEADER -->
+    <header class="max-w-4xl mx-auto mb-8">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center">
+                    <i data-lucide="zap" class="w-7 h-7"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold">PowerSave</h1>
+                    <p class="text-xs text-slate-400">Waste Fee Offset</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="showNotifications()" class="relative p-2 glass-card rounded-full hover:bg-white/10 transition">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span id="notif-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[10px] flex items-center justify-center notification-badge">3</span>
+                </button>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-sm font-bold">
+                    ΝΑ
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto space-y-6">
+
+        <!-- ACTIVE SESSION ALERT -->
+        <div id="session-alert" class="session-active rounded-2xl p-4 slide-up hidden">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+                        <i data-lucide="zap" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Session Εξοικονόμησης Ενεργό!</h3>
+                        <p class="text-sm text-white/80">Λήγει σε <span id="session-timer">01:42:30</span></p>
+                    </div>
+                </div>
+                <button onclick="joinSession()" class="bg-white text-orange-600 px-4 py-2 rounded-xl font-bold text-sm hover:bg-orange-100 transition">
+                    Συμμετοχή
+                </button>
+            </div>
+        </div>
+
+        <!-- DOUBLE POINTS BANNER -->
+        <div id="double-points-banner" class="double-points rounded-2xl p-4 slide-up hidden">
+            <div class="flex items-center gap-3">
+                <i data-lucide="star" class="w-8 h-8"></i>
+                <div>
+                    <h3 class="font-bold">Διπλοί Πόντοι Σήμερα!</h3>
+                    <p class="text-sm text-white/80">Κάθε kWh αξίζει x2 - Μέγιστη Ευκαιρία!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN WALLET CARD -->
+        <div class="glass-card rounded-3xl p-6 slide-up">
+            <div class="flex flex-col md:flex-row gap-6">
+
+                <!-- CIRCULAR PROGRESS -->
+                <div class="flex-shrink-0 flex flex-col items-center">
+                    <div class="relative w-44 h-44">
+                        <svg class="w-full h-full progress-ring">
+                            <circle cx="88" cy="88" r="75" stroke="rgba(255,255,255,0.1)" stroke-width="12" fill="none"/>
+                            <circle id="progress-circle" cx="88" cy="88" r="75" stroke="url(#gradient)" stroke-width="12" fill="none"
+                                    stroke-linecap="round" stroke-dasharray="471" stroke-dashoffset="353"/>
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#10b981"/>
+                                    <stop offset="100%" stop-color="#3b82f6"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span id="progress-percent" class="text-4xl font-bold gradient-text">25%</span>
+                            <span class="text-xs text-slate-400">Καλυμμένο</span>
+                        </div>
+                    </div>
+                    <p class="text-center text-sm text-slate-400 mt-2">Ετήσιος Στόχος Σκυβάλων</p>
+                </div>
+
+                <!-- WALLET INFO -->
+                <div class="flex-1 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-slate-400">Δήμος Λευκωσίας</p>
+                            <p class="text-xs text-slate-500">Αρ. Υποστατικού: #12345-NIC</p>
+                        </div>
+                        <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-bold">
+                            Ενεργό
+                        </span>
+                    </div>
+
+                    <!-- BALANCE -->
+                    <div class="bg-white/5 rounded-2xl p-4">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-sm text-slate-400 mb-1">Υπόλοιπο Wallet</p>
+                                <p id="wallet-balance" class="text-3xl font-bold">€45.30</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-slate-400 mb-1">Απομένουν</p>
+                                <p id="remaining" class="text-xl font-semibold text-blue-400">€139.70</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex gap-2">
+                            <div class="flex-1 bg-white/5 rounded-xl p-3 text-center">
+                                <p class="text-2xl font-bold text-green-400" id="total-earned">€67.80</p>
+                                <p class="text-[10px] text-slate-500 uppercase">Συνολικά Κέρδη</p>
+                            </div>
+                            <div class="flex-1 bg-white/5 rounded-xl p-3 text-center">
+                                <p class="text-2xl font-bold text-blue-400" id="total-paid">€22.50</p>
+                                <p class="text-[10px] text-slate-500 uppercase">Πληρώθηκε στον Δήμο</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ANNUAL TARGET -->
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-slate-400">Ετήσιο Τέλος:</span>
+                        <span class="font-bold">€185.00</span>
+                    </div>
+                    <div class="w-full bg-white/10 rounded-full h-2">
+                        <div id="annual-progress" class="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full transition-all duration-1000" style="width: 25%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button onclick="showSection('history')" class="glass-card rounded-2xl p-4 hover:bg-white/10 transition text-center">
+                <i data-lucide="history" class="w-6 h-6 mx-auto mb-2 text-blue-400"></i>
+                <p class="text-sm font-medium">Ιστορικό</p>
+            </button>
+            <button onclick="showSection('tips')" class="glass-card rounded-2xl p-4 hover:bg-white/10 transition text-center">
+                <i data-lucide="lightbulb" class="w-6 h-6 mx-auto mb-2 text-yellow-400"></i>
+                <p class="text-sm font-medium">Tips</p>
+            </button>
+            <button onclick="showSection('receipts')" class="glass-card rounded-2xl p-4 hover:bg-white/10 transition text-center">
+                <i data-lucide="receipt" class="w-6 h-6 mx-auto mb-2 text-green-400"></i>
+                <p class="text-sm font-medium">Αποδείξεις</p>
+            </button>
+            <button onclick="showSection('faq')" class="glass-card rounded-2xl p-4 hover:bg-white/10 transition text-center">
+                <i data-lucide="help-circle" class="w-6 h-6 mx-auto mb-2 text-purple-400"></i>
+                <p class="text-sm font-medium">FAQ</p>
+            </button>
+        </div>
+
+        <!-- TRANSACTION HISTORY -->
+        <div id="section-history" class="glass-card rounded-3xl p-6 slide-up">
+            <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                <i data-lucide="history" class="w-5 h-5 text-blue-400"></i>
+                Ιστορικό Συναλλαγών
+            </h3>
+            <div class="space-y-3" id="transactions-list">
+                <!-- Transactions will be loaded here -->
+                <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                            <i data-lucide="arrow-down-left" class="w-5 h-5 text-green-400"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">Session Εξοικονόμησης</p>
+                            <p class="text-xs text-slate-400">07 Δεκ 2025 • 18:00-20:00</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-green-400">+€0.68</p>
+                        <p class="text-xs text-slate-500">2.0 kWh</p>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                            <i data-lucide="star" class="w-5 h-5 text-purple-400"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">Double Points Session</p>
+                            <p class="text-xs text-slate-400">05 Δεκ 2025 • 17:00-19:00</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-purple-400">+€1.36</p>
+                        <p class="text-xs text-slate-500">2.0 kWh x2</p>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <i data-lucide="arrow-up-right" class="w-5 h-5 text-blue-400"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">Πληρωμή στον Δήμο</p>
+                            <p class="text-xs text-slate-400">01 Δεκ 2025 • Αυτόματη</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-blue-400">-€22.50</p>
+                        <p class="text-xs text-slate-500">Μηνιαία</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ENERGY TIPS SECTION -->
+        <div id="section-tips" class="glass-card rounded-3xl p-6 slide-up hidden">
+            <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                <i data-lucide="lightbulb" class="w-5 h-5 text-yellow-400"></i>
+                Tips για Μέγιστο Κέρδος
+            </h3>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-white/5 rounded-xl p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <i data-lucide="droplets" class="w-5 h-5 text-blue-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Θερμοσίφωνας</h4>
+                            <p class="text-xs text-green-400">Εξοικονόμηση: €15-25/μήνα</p>
+                        </div>
+                    </div>
+                    <ul class="text-sm text-slate-300 space-y-1">
+                        <li>• Κλείστε τον κατά τη διάρκεια των Sessions</li>
+                        <li>• Ρυθμίστε στους 60°C αντί για 70°C</li>
+                        <li>• Ανάψτε τον 30 λεπτά πριν το μπάνιο</li>
+                    </ul>
+                </div>
+                <div class="bg-white/5 rounded-xl p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                            <i data-lucide="wind" class="w-5 h-5 text-cyan-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Κλιματιστικό</h4>
+                            <p class="text-xs text-green-400">Εξοικονόμηση: €20-40/μήνα</p>
+                        </div>
+                    </div>
+                    <ul class="text-sm text-slate-300 space-y-1">
+                        <li>• 26°C το καλοκαίρι, 21°C το χειμώνα</li>
+                        <li>• Καθαρίστε τα φίλτρα κάθε μήνα</li>
+                        <li>• Κλείστε πόρτες και παράθυρα</li>
+                    </ul>
+                </div>
+                <div class="bg-white/5 rounded-xl p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
+                            <i data-lucide="flame" class="w-5 h-5 text-orange-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Φούρνος</h4>
+                            <p class="text-xs text-green-400">Εξοικονόμηση: €5-10/μήνα</p>
+                        </div>
+                    </div>
+                    <ul class="text-sm text-slate-300 space-y-1">
+                        <li>• Αποφύγετε χρήση 18:00-21:00</li>
+                        <li>• Χρησιμοποιήστε αερόθερμο αντί για grill</li>
+                        <li>• Μην ανοίγετε την πόρτα συχνά</li>
+                    </ul>
+                </div>
+                <div class="bg-white/5 rounded-xl p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center">
+                            <i data-lucide="shirt" class="w-5 h-5 text-pink-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Πλυντήριο</h4>
+                            <p class="text-xs text-green-400">Εξοικονόμηση: €5-15/μήνα</p>
+                        </div>
+                    </div>
+                    <ul class="text-sm text-slate-300 space-y-1">
+                        <li>• Πλύνετε σε χαμηλές θερμοκρασίες (30-40°C)</li>
+                        <li>• Χρησιμοποιήστε πλήρες φορτίο</li>
+                        <li>• Αποφύγετε ώρες αιχμής</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECEIPTS SECTION -->
+        <div id="section-receipts" class="glass-card rounded-3xl p-6 slide-up hidden">
+            <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                <i data-lucide="receipt" class="w-5 h-5 text-green-400"></i>
+                Αποδείξεις Πληρωμών
+            </h3>
+            <div class="space-y-3">
+                <div class="bg-white/5 rounded-xl p-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <p class="font-bold">PS-202512-ABC123</p>
+                            <p class="text-xs text-slate-400">01 Δεκεμβρίου 2025</p>
+                        </div>
+                        <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-bold">PAID</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Δήμος Λευκωσίας - Τέλη Σκυβάλων</span>
+                        <span class="font-bold">€22.50</span>
+                    </div>
+                    <button class="mt-3 w-full py-2 bg-white/10 rounded-lg text-sm font-medium hover:bg-white/20 transition flex items-center justify-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        Λήψη PDF
+                    </button>
+                </div>
+                <div class="bg-white/5 rounded-xl p-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <p class="font-bold">PS-202511-DEF456</p>
+                            <p class="text-xs text-slate-400">01 Νοεμβρίου 2025</p>
+                        </div>
+                        <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-bold">PAID</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Δήμος Λευκωσίας - Τέλη Σκυβάλων</span>
+                        <span class="font-bold">€18.30</span>
+                    </div>
+                    <button class="mt-3 w-full py-2 bg-white/10 rounded-lg text-sm font-medium hover:bg-white/20 transition flex items-center justify-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        Λήψη PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ SECTION -->
+        <div id="section-faq" class="glass-card rounded-3xl p-6 slide-up hidden">
+            <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                <i data-lucide="help-circle" class="w-5 h-5 text-purple-400"></i>
+                Συχνές Ερωτήσεις
+            </h3>
+            <div class="space-y-3">
+                <div class="bg-white/5 rounded-xl p-4 cursor-pointer" onclick="toggleFaq(this)">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-medium">Τι γίνεται αν μαζέψω περισσότερα χρήματα από τα τέλη μου;</h4>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform"></i>
+                    </div>
+                    <p class="text-sm text-slate-400 mt-2 hidden">Το πλεόνασμα δεν χάνεται! Μπορείτε να το μεταφέρετε για τα τέλη του επόμενου έτους ή να το δωρίσετε στο Κοινωνικό Ταμείο για ευάλωτες οικογένειες.</p>
+                </div>
+                <div class="bg-white/5 rounded-xl p-4 cursor-pointer" onclick="toggleFaq(this)">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-medium">Επηρεάζεται ο λογαριασμός της ΑΗΚ;</h4>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform"></i>
+                    </div>
+                    <p class="text-sm text-slate-400 mt-2 hidden">Όχι. Πληρώνετε τον λογαριασμό ρεύματος κανονικά. Το PowerSave είναι ένας επιπλέον κουμπαράς που γεμίζει από την εξοικονόμηση.</p>
+                </div>
+                <div class="bg-white/5 rounded-xl p-4 cursor-pointer" onclick="toggleFaq(this)">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-medium">Πώς ξέρει η εφαρμογή ότι έκανα εξοικονόμηση;</h4>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform"></i>
+                    </div>
+                    <p class="text-sm text-slate-400 mt-2 hidden">Χρησιμοποιούμε έναν αλγόριθμο που συγκρίνει τη σημερινή κατανάλωση με τον Μέσο Όρο των προηγούμενων 10 ημερών (Baseline).</p>
+                </div>
+                <div class="bg-white/5 rounded-xl p-4 cursor-pointer" onclick="toggleFaq(this)">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-medium">Τι είναι τα Double Points Days;</h4>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform"></i>
+                    </div>
+                    <p class="text-sm text-slate-400 mt-2 hidden">Σε ημέρες ακραίων καιρικών συνθηκών, η αξία της εξοικονόμησης διπλασιάζεται! Βοηθάτε το δίκτυο να αποφύγει υπερφόρτωση.</p>
+                </div>
+                <div class="bg-white/5 rounded-xl p-4 cursor-pointer" onclick="toggleFaq(this)">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-medium">Πότε μεταφέρονται τα χρήματα στον Δήμο;</h4>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform"></i>
+                    </div>
+                    <p class="text-sm text-slate-400 mt-2 hidden">Στο τέλος κάθε μήνα, το PowerSave αθροίζει τα κέρδη σας και τα μεταφέρει αυτόματα στον Δήμο.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- SESSION RESULT MODAL -->
+    <div id="session-result-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 rounded-3xl p-6 max-w-sm w-full text-center slide-up">
+            <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center">
+                <i data-lucide="trophy" class="w-10 h-10"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">Μπράβο!</h2>
+            <p class="text-slate-400 mb-4">Session Ολοκληρώθηκε</p>
+
+            <div class="bg-white/5 rounded-xl p-4 mb-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-3xl font-bold text-green-400" id="result-kwh">2.0</p>
+                        <p class="text-xs text-slate-500">kWh Εξοικονόμηση</p>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-bold text-blue-400" id="result-eur">€0.68</p>
+                        <p class="text-xs text-slate-500">Κέρδος</p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-sm text-slate-400 mb-4">Τα χρήματα προστέθηκαν στο Waste Wallet σου!</p>
+
+            <button onclick="closeModal()" class="w-full py-3 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl font-bold hover:opacity-90 transition">
+                Τέλεια!
+            </button>
+        </div>
+    </div>
+
+    <!-- NOTIFICATIONS PANEL -->
+    <div id="notifications-panel" class="fixed inset-y-0 right-0 w-80 bg-slate-900 shadow-2xl z-50 transform translate-x-full transition-transform duration-300">
+        <div class="p-4 border-b border-slate-700 flex justify-between items-center">
+            <h3 class="font-bold">Ειδοποιήσεις</h3>
+            <button onclick="hideNotifications()" class="p-2 hover:bg-white/10 rounded-full">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="p-4 space-y-3 overflow-y-auto max-h-[calc(100vh-80px)]">
+            <div class="bg-orange-500/10 border border-orange-500/30 rounded-xl p-3">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="zap" class="w-4 h-4 text-orange-400"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-sm">Session Ενεργό!</p>
+                        <p class="text-xs text-slate-400">Τώρα - 20:00</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-3">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-sm">Πληρωμή €22.50</p>
+                        <p class="text-xs text-slate-400">Στάλθηκε στον Δήμο</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-3">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="star" class="w-4 h-4 text-purple-400"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-sm">Double Points αύριο!</p>
+                        <p class="text-xs text-slate-400">Λόγω υψηλών θερμοκρασιών</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Check for active session
+        async function checkActiveSession() {
+            try {
+                const response = await fetch('/api/sessions/active');
+                const data = await response.json();
+
+                if (data.active) {
+                    document.getElementById('session-alert').classList.remove('hidden');
+                    startSessionTimer(data.session.end_time);
+
+                    if (data.session.is_double_points) {
+                        document.getElementById('double-points-banner').classList.remove('hidden');
+                    }
+                }
+            } catch (e) {
+                console.log('Demo mode - showing sample session alert');
+                // Demo: show session alert
+                const hour = new Date().getHours();
+                if (hour >= 17 && hour < 20) {
+                    document.getElementById('session-alert').classList.remove('hidden');
+                }
+            }
+        }
+
+        // Session timer
+        function startSessionTimer(endTime) {
+            const timer = document.getElementById('session-timer');
+
+            setInterval(() => {
+                const now = new Date();
+                const end = new Date(endTime);
+                const diff = end - now;
+
+                if (diff <= 0) {
+                    timer.textContent = '00:00:00';
+                    return;
+                }
+
+                const hours = Math.floor(diff / 3600000);
+                const mins = Math.floor((diff % 3600000) / 60000);
+                const secs = Math.floor((diff % 60000) / 1000);
+
+                timer.textContent = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Join session
+        async function joinSession() {
+            alert('Συμμετέχεις στο Session! Θα λάβεις ειδοποίηση όταν ολοκληρωθεί.');
+
+            // Simulate session completion after 5 seconds for demo
+            setTimeout(() => {
+                showSessionResult(2.0, 0.68);
+            }, 5000);
+        }
+
+        // Show session result
+        function showSessionResult(kwh, eur) {
+            document.getElementById('result-kwh').textContent = kwh.toFixed(1);
+            document.getElementById('result-eur').textContent = `€${eur.toFixed(2)}`;
+            document.getElementById('session-result-modal').classList.remove('hidden');
+
+            // Update wallet balance
+            const balance = parseFloat(document.getElementById('wallet-balance').textContent.replace('€', ''));
+            document.getElementById('wallet-balance').textContent = `€${(balance + eur).toFixed(2)}`;
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('session-result-modal').classList.add('hidden');
+        }
+
+        // Show section
+        function showSection(section) {
+            const sections = ['history', 'tips', 'receipts', 'faq'];
+            sections.forEach(s => {
+                const el = document.getElementById(`section-${s}`);
+                if (s === section) {
+                    el.classList.toggle('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+        }
+
+        // Toggle FAQ
+        function toggleFaq(element) {
+            const answer = element.querySelector('p');
+            const icon = element.querySelector('i[data-lucide="chevron-down"]');
+
+            answer.classList.toggle('hidden');
+            icon.style.transform = answer.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+
+        // Notifications panel
+        function showNotifications() {
+            document.getElementById('notifications-panel').classList.remove('translate-x-full');
+            document.getElementById('notif-badge').classList.add('hidden');
+        }
+
+        function hideNotifications() {
+            document.getElementById('notifications-panel').classList.add('translate-x-full');
+        }
+
+        // Update progress circle
+        function updateProgress(percent) {
+            const circle = document.getElementById('progress-circle');
+            const circumference = 2 * Math.PI * 75; // radius = 75
+            const offset = circumference - (percent / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+            document.getElementById('progress-percent').textContent = `${percent}%`;
+            document.getElementById('annual-progress').style.width = `${percent}%`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkActiveSession();
+            updateProgress(25);
+
+            // Check for double points
+            const isWeekend = new Date().getDay() === 0 || new Date().getDay() === 6;
+            if (isWeekend) {
+                document.getElementById('double-points-banner').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
