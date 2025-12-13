@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: powersave-db
+    environment:
+      POSTGRES_DB: powersave
+      POSTGRES_USER: powersave
+      POSTGRES_PASSWORD: powersave
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U powersave"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - powersave-network
+
+  # Redis for Celery
+  redis:
+    image: redis:7-alpine
+    container_name: powersave-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - powersave-network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: powersave-api
+    environment:
+      DATABASE_URL: postgresql://powersave:powersave@postgres:5432/powersave
+      REDIS_URL: redis://redis:6379/0
+      DEBUG: "True"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - powersave-network
+    restart: unless-stopped
+
+  # Celery Worker (for background tasks)
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: powersave-celery
+    command: celery -A backend.tasks worker --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://powersave:powersave@postgres:5432/powersave
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - powersave-network
+    restart: unless-stopped
+
+  # pgAdmin (optional, for database management)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: powersave-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@powersave.cy
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - powersave-network
+    profiles:
+      - debug
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  powersave-network:
+    driver: bridge
