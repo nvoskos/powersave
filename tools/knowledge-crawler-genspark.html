@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenSpark AI Knowledge Crawler - Web Content Extractor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .json-preview { font-family: 'Courier New', monospace; white-space: pre-wrap; }
+        .loading { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .article-card { transition: all 0.3s ease; }
+        .article-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .genspark-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: slideIn 0.3s ease forwards; }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .batch-item {
+            transition: all 0.2s ease;
+        }
+        .batch-item:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+        <!-- Header -->
+        <header class="mb-6">
+            <div class="gradient-bg rounded-2xl shadow-2xl p-8 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                            </svg>
+                            <h1 class="text-4xl font-bold">GenSpark AI Knowledge Crawler</h1>
+                        </div>
+                        <p class="text-blue-100 text-lg">AI-Powered Web Content Extraction & Analysis • Extract, Analyze, Export</p>
+                    </div>
+                    <div class="genspark-badge">
+                        ⚡ POWERED BY GENSPARK
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Configuration Panel -->
+            <div class="lg:col-span-1 space-y-4">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Configuration
+                    </h2>
+                    
+                    <!-- URL Input -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">🌐 Target URL</label>
+                        <input type="url" id="targetUrl" placeholder="https://example.com/page"
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-all"
+                            value="https://www.cylaw.org/nomoi/enop/non-ind/0_15/full.html">
+                        <p class="text-xs text-gray-500 mt-1">Enter the webpage URL to crawl</p>
+                    </div>
+
+                    <!-- Template Selection -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">📋 Quick Templates</label>
+                        <select id="templateSelect" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-all">
+                            <option value="">Custom Configuration</option>
+                            <option value="cylaw">Cyprus Law (cylaw.org)</option>
+                            <option value="wikipedia">Wikipedia Article</option>
+                            <option value="blog">Blog Post</option>
+                            <option value="news">News Article</option>
+                            <option value="product">Product Page</option>
+                            <option value="documentation">Documentation</option>
+                        </select>
+                    </div>
+
+                    <!-- Extraction Mode -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">🤖 AI Features</label>
+                        <div class="space-y-2">
+                            <div class="flex items-center p-3 bg-purple-50 rounded-lg">
+                                <input type="checkbox" id="aiSummarize" checked class="mr-3 w-4 h-4">
+                                <label for="aiSummarize" class="text-sm font-medium">AI Summarization</label>
+                            </div>
+                            <div class="flex items-center p-3 bg-blue-50 rounded-lg">
+                                <input type="checkbox" id="aiKeywords" checked class="mr-3 w-4 h-4">
+                                <label for="aiKeywords" class="text-sm font-medium">Extract Keywords</label>
+                            </div>
+                            <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                                <input type="checkbox" id="aiTranslate" class="mr-3 w-4 h-4">
+                                <label for="aiTranslate" class="text-sm font-medium">Translate to Greek</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Crawl Buttons -->
+                    <div class="space-y-2">
+                        <button id="crawlBtn" class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105">
+                            🚀 Start AI Crawling
+                        </button>
+                        
+                        <button id="loadSampleBtn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-all">
+                            📄 Load Sample Data
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Batch Crawling -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                        </svg>
+                        Batch Crawling
+                    </h3>
+                    
+                    <div class="mb-3">
+                        <textarea id="batchUrls" rows="4" placeholder="Enter multiple URLs (one per line)&#10;https://example1.com&#10;https://example2.com"
+                            class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 text-sm"></textarea>
+                    </div>
+                    
+                    <button id="batchCrawlBtn" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-lg transition-all">
+                        📦 Batch Crawl
+                    </button>
+                    
+                    <div id="batchProgress" class="mt-3 hidden">
+                        <div class="text-sm font-medium text-gray-700 mb-1">
+                            Progress: <span id="batchCount">0/0</span>
+                        </div>
+                        <div class="bg-gray-200 rounded-full h-2">
+                            <div id="batchProgressBar" class="bg-orange-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Options -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">⚙️ Advanced</h3>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Timeout (seconds)</label>
+                            <input type="number" id="timeout" value="30" min="5" max="120"
+                                class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 text-sm">
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" id="includeMetadata" checked class="mr-2">
+                            <label for="includeMetadata" class="text-sm">Include Metadata</label>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" id="sanitizeContent" checked class="mr-2">
+                            <label for="sanitizeContent" class="text-sm">Sanitize HTML</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="lg:col-span-2 space-y-4">
+                <!-- Status Panel -->
+                <div id="statusPanel" class="bg-white rounded-xl shadow-lg p-5 hidden animate-in">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div id="statusIcon" class="text-3xl mr-3">🔄</div>
+                            <div>
+                                <div id="statusText" class="font-bold text-gray-800 text-lg">Processing...</div>
+                                <div id="statusDetails" class="text-sm text-gray-600"></div>
+                            </div>
+                        </div>
+                        <div id="loadingSpinner" class="loading w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full"></div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="bg-gray-200 rounded-full h-3">
+                            <div id="progressBar" class="bg-gradient-to-r from-purple-600 to-blue-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Analysis Results -->
+                <div id="aiAnalysisPanel" class="bg-white rounded-xl shadow-lg p-6 hidden animate-in">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        AI Analysis
+                    </h2>
+                    <div id="aiAnalysisContent" class="space-y-3"></div>
+                </div>
+
+                <!-- JSON Output -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                            <svg class="w-6 h-6 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Knowledge JSON
+                        </h2>
+                        <div class="flex gap-2">
+                            <button id="copyJsonBtn" class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg transition-all shadow-md">
+                                📋 Copy
+                            </button>
+                            <button id="downloadJsonBtn" class="bg-purple-600 hover:bg-purple-700 text-white text-sm px-4 py-2 rounded-lg transition-all shadow-md">
+                                💾 JSON
+                            </button>
+                            <button id="downloadCsvBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition-all shadow-md">
+                                📊 CSV
+                            </button>
+                            <button id="downloadMdBtn" class="bg-gray-600 hover:bg-gray-700 text-white text-sm px-4 py-2 rounded-lg transition-all shadow-md">
+                                📝 MD
+                            </button>
+                        </div>
+                    </div>
+                    <div id="jsonOutput" class="json-preview bg-gray-900 text-green-400 p-4 rounded-lg max-h-96 overflow-y-auto text-sm font-mono">
+                        <span class="text-gray-500">// No data extracted yet. Start crawling to see results.</span>
+                    </div>
+                </div>
+
+                <!-- Articles Preview -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        Articles Preview
+                        <span id="articleCount" class="ml-2 text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">0</span>
+                    </h2>
+                    <div id="articlesPreview" class="space-y-3 max-h-[600px] overflow-y-auto">
+                        <div class="text-center py-12 text-gray-400">
+                            <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                            </svg>
+                            <p class="text-lg">No articles extracted yet</p>
+                            <p class="text-sm">Start crawling to see results here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Article Details -->
+    <div id="articleModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+            <div class="gradient-bg text-white p-6">
+                <div class="flex justify-between items-start">
+                    <h3 id="modalTitle" class="text-2xl font-bold">Article Details</h3>
+                    <button id="closeModalBtn" class="text-white hover:text-gray-200 text-2xl font-bold">&times;</button>
+                </div>
+            </div>
+            <div id="modalContent" class="p-6 overflow-y-auto max-h-[70vh]"></div>
+        </div>
+    </div>
+
+    <script>
+        // GenSpark AI Configuration
+        const GENSPARK_CONFIG = {
+            apiKey: localStorage.getItem('genspark_api_key') || '',
+            endpoint: 'https://www.genspark.ai/api/llm_proxy/v1/chat/completions',
+            model: 'gpt-5-mini',
+            corsProxy: 'https://api.allorigins.win/raw?url='
+        };
+
+        // Sample data
+        const sampleData = {
+            "extractedAt": "2025-12-18T00:00:00.000Z",
+            "extractionMethod": "GenSpark AI Crawler",
+            "metadata": {
+                "sourceUrl": "https://www.cylaw.org/nomoi/enop/non-ind/0_15/full.html",
+                "pageType": "legal-document",
+                "title": "Ο περί Παραγραφής Νόμος (ΚΕΦ.15)",
+                "articlesCount": 3,
+                "aiAnalysis": {
+                    "summary": "Legal document about limitation periods for various types of claims",
+                    "keywords": ["limitation", "legal", "Cyprus law", "prescription"]
+                }
+            },
+            "data": {
+                "title": "Ο περί Παραγραφής Νόμος (ΚΕΦ.15)",
+                "articles": [
+                    {
+                        "articleNo": "1",
+                        "articleTitle": "Short Title",
+                        "articleText": "This Law may be cited as the Limitation of Actions Law.",
+                        "aiSummary": "Defines the short title of the law"
+                    },
+                    {
+                        "articleNo": "2",
+                        "articleTitle": "Interpretation",
+                        "articleText": "In this Law- \"action\" means civil proceedings before any Court and includes arbitration proceedings; \"period of limitation\" means the several periods of limitation as prescribed by this Law.",
+                        "aiSummary": "Provides definitions for key terms used in the law"
+                    },
+                    {
+                        "articleNo": "3",
+                        "articleTitle": "Period of limitation",
+                        "articleText": "Subject to the provisions of this Law, no action shall be brought upon various claims after specific time periods have elapsed.",
+                        "aiSummary": "Specifies limitation periods for different types of legal claims"
+                    }
+                ]
+            }
+        };
+
+        // DOM Elements
+        const elements = {
+            targetUrl: document.getElementById('targetUrl'),
+            templateSelect: document.getElementById('templateSelect'),
+            aiSummarize: document.getElementById('aiSummarize'),
+            aiKeywords: document.getElementById('aiKeywords'),
+            aiTranslate: document.getElementById('aiTranslate'),
+            crawlBtn: document.getElementById('crawlBtn'),
+            loadSampleBtn: document.getElementById('loadSampleBtn'),
+            batchUrls: document.getElementById('batchUrls'),
+            batchCrawlBtn: document.getElementById('batchCrawlBtn'),
+            batchProgress: document.getElementById('batchProgress'),
+            batchCount: document.getElementById('batchCount'),
+            batchProgressBar: document.getElementById('batchProgressBar'),
+            copyJsonBtn: document.getElementById('copyJsonBtn'),
+            downloadJsonBtn: document.getElementById('downloadJsonBtn'),
+            downloadCsvBtn: document.getElementById('downloadCsvBtn'),
+            downloadMdBtn: document.getElementById('downloadMdBtn'),
+            jsonOutput: document.getElementById('jsonOutput'),
+            articlesPreview: document.getElementById('articlesPreview'),
+            articleCount: document.getElementById('articleCount'),
+            statusPanel: document.getElementById('statusPanel'),
+            statusIcon: document.getElementById('statusIcon'),
+            statusText: document.getElementById('statusText'),
+            statusDetails: document.getElementById('statusDetails'),
+            progressBar: document.getElementById('progressBar'),
+            loadingSpinner: document.getElementById('loadingSpinner'),
+            aiAnalysisPanel: document.getElementById('aiAnalysisPanel'),
+            aiAnalysisContent: document.getElementById('aiAnalysisContent'),
+            articleModal: document.getElementById('articleModal'),
+            modalTitle: document.getElementById('modalTitle'),
+            modalContent: document.getElementById('modalContent'),
+            closeModalBtn: document.getElementById('closeModalBtn')
+        };
+
+        let currentJsonData = null;
+        let batchResults = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            checkApiKey();
+        });
+
+        function setupEventListeners() {
+            elements.crawlBtn.addEventListener('click', startCrawling);
+            elements.loadSampleBtn.addEventListener('click', loadSampleData);
+            elements.batchCrawlBtn.addEventListener('click', startBatchCrawling);
+            elements.copyJsonBtn.addEventListener('click', copyJsonToClipboard);
+            elements.downloadJsonBtn.addEventListener('click', () => downloadData('json'));
+            elements.downloadCsvBtn.addEventListener('click', () => downloadData('csv'));
+            elements.downloadMdBtn.addEventListener('click', () => downloadData('md'));
+            elements.templateSelect.addEventListener('change', applyTemplate);
+            elements.closeModalBtn.addEventListener('click', closeModal);
+        }
+
+        function checkApiKey() {
+            if (!GENSPARK_CONFIG.apiKey) {
+                // Redirect to setup page if no API key found
+                showToast('⚠️ No API key found. Redirecting to setup...', 'warning');
+                setTimeout(() => {
+                    window.location.href = 'setup-crawler.html';
+                }, 2000);
+            } else {
+                showToast('✅ API key configured', 'success');
+            }
+        }
+
+        function applyTemplate() {
+            const template = elements.templateSelect.value;
+            const urls = {
+                'cylaw': 'https://www.cylaw.org/nomoi/enop/non-ind/0_15/full.html',
+                'wikipedia': 'https://en.wikipedia.org/wiki/Web_scraping',
+                'blog': 'https://example.com/blog/post',
+                'news': 'https://example.com/news/article',
+                'product': 'https://example.com/product/123',
+                'documentation': 'https://example.com/docs'
+            };
+            
+            if (urls[template]) {
+                elements.targetUrl.value = urls[template];
+            }
+        }
+
+        function loadSampleData() {
+            updateStatus('loading', 'Loading sample data...', 'Preparing Cyprus Law example');
+            
+            setTimeout(() => {
+                currentJsonData = sampleData;
+                displayJson(currentJsonData);
+                displayArticlesPreview(currentJsonData.data.articles || []);
+                displayAiAnalysis(currentJsonData.metadata.aiAnalysis);
+                updateStatus('success', 'Sample data loaded!', 'Ready for export');
+                
+                setTimeout(() => hideStatus(), 2000);
+            }, 1000);
+        }
+
+        async function startCrawling() {
+            const url = elements.targetUrl.value.trim();
+            
+            if (!url || !isValidUrl(url)) {
+                showToast('Please enter a valid URL', 'error');
+                return;
+            }
+
+            updateStatus('loading', 'Crawling in progress...', `Fetching: ${url}`);
+            
+            try {
+                // Fetch content through CORS proxy
+                const content = await fetchUrl(url);
+                
+                // Extract data
+                updateStatus('loading', 'Extracting data...', 'Parsing HTML content');
+                const extracted = await extractContent(content, url);
+                
+                // AI Analysis
+                if (elements.aiSummarize.checked || elements.aiKeywords.checked || elements.aiTranslate.checked) {
+                    updateStatus('loading', 'AI Analysis...', 'Processing with GenSpark AI');
+                    extracted.aiAnalysis = await performAiAnalysis(extracted);
+                }
+                
+                // Build final JSON
+                currentJsonData = {
+                    extractedAt: new Date().toISOString(),
+                    extractionMethod: 'GenSpark AI Crawler',
+                    metadata: {
+                        sourceUrl: url,
+                        pageType: determinePageType(url),
+                        articlesCount: extracted.articles?.length || 0,
+                        aiAnalysis: extracted.aiAnalysis
+                    },
+                    data: extracted
+                };
+                
+                displayJson(currentJsonData);
+                displayArticlesPreview(currentJsonData.data.articles || []);
+                if (extracted.aiAnalysis) {
+                    displayAiAnalysis(extracted.aiAnalysis);
+                }
+                
+                updateStatus('success', 'Crawling completed!', `Extracted ${currentJsonData.metadata.articlesCount} items`);
+                setTimeout(() => hideStatus(), 3000);
+                
+            } catch (error) {
+                updateStatus('error', 'Crawling failed', error.message);
+                console.error('Crawling error:', error);
+                setTimeout(() => hideStatus(), 5000);
+            }
+        }
+
+        async function startBatchCrawling() {
+            const urls = elements.batchUrls.value.trim().split('\n').filter(u => u.trim() && isValidUrl(u.trim()));
+            
+            if (urls.length === 0) {
+                showToast('Please enter valid URLs (one per line)', 'error');
+                return;
+            }
+
+            elements.batchProgress.classList.remove('hidden');
+            batchResults = [];
+            let completed = 0;
+
+            for (let i = 0; i < urls.length; i++) {
+                const url = urls[i].trim();
+                elements.batchCount.textContent = `${i + 1}/${urls.length}`;
+                elements.batchProgressBar.style.width = `${((i + 1) / urls.length) * 100}%`;
+                
+                updateStatus('loading', `Batch crawling... (${i + 1}/${urls.length})`, url);
+                
+                try {
+                    elements.targetUrl.value = url;
+                    await startCrawling();
+                    if (currentJsonData) {
+                        batchResults.push(currentJsonData);
+                    }
+                } catch (error) {
+                    console.error(`Failed to crawl ${url}:`, error);
+                }
+                
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
+            // Combine results
+            if (batchResults.length > 0) {
+                currentJsonData = {
+                    batchCrawl: true,
+                    crawledAt: new Date().toISOString(),
+                    totalUrls: urls.length,
+                    successfulCrawls: batchResults.length,
+                    results: batchResults
+                };
+                
+                displayJson(currentJsonData);
+                updateStatus('success', `Batch crawl completed!`, `Successfully crawled ${batchResults.length}/${urls.length} URLs`);
+            }
+
+            setTimeout(() => {
+                hideStatus();
+                elements.batchProgress.classList.add('hidden');
+            }, 3000);
+        }
+
+        async function fetchUrl(url) {
+            try {
+                const proxyUrl = GENSPARK_CONFIG.corsProxy + encodeURIComponent(url);
+                const response = await fetch(proxyUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/html,application/xhtml+xml'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.text();
+            } catch (error) {
+                throw new Error(`Failed to fetch URL: ${error.message}`);
+            }
+        }
+
+        async function extractContent(html, url) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Basic extraction
+            const title = doc.querySelector('title')?.textContent || doc.querySelector('h1')?.textContent || 'Untitled';
+            
+            // Extract articles/sections
+            const articles = [];
+            let selectors = ['article', '.article', 'section', '.section', '.content'];
+            
+            for (const selector of selectors) {
+                const elements = doc.querySelectorAll(selector);
+                if (elements.length > 0) {
+                    elements.forEach((el, idx) => {
+                        const heading = el.querySelector('h1, h2, h3, h4')?.textContent?.trim() || `Section ${idx + 1}`;
+                        const text = el.textContent?.trim() || '';
+                        
+                        if (text.length > 50) {
+                            articles.push({
+                                articleNo: (idx + 1).toString(),
+                                articleTitle: heading,
+                                articleText: text.substring(0, 1000) // Limit length
+                            });
+                        }
+                    });
+                    break;
+                }
+            }
+            
+            // If no articles found, create one from body
+            if (articles.length === 0) {
+                const bodyText = doc.body?.textContent?.trim() || '';
+                if (bodyText) {
+                    articles.push({
+                        articleNo: "1",
+                        articleTitle: title,
+                        articleText: bodyText.substring(0, 2000)
+                    });
+                }
+            }
+            
+            return {
+                title,
+                articles,
+                sourceUrl: url
+            };
+        }
+
+        async function performAiAnalysis(data) {
+            if (!GENSPARK_CONFIG.apiKey) {
+                return {
+                    error: 'API key not configured'
+                };
+            }
+
+            try {
+                const content = data.articles?.map(a => a.articleText).join('\n\n') || '';
+                const analysisPrompt = `Analyze the following web content and provide:
+1. A brief summary (2-3 sentences)
+2. Key topics/keywords (5-7 keywords)
+${elements.aiTranslate.checked ? '3. Greek translation of the summary' : ''}
+
+Content:
+${content.substring(0, 3000)}
+
+Respond in JSON format:
+{
+  "summary": "...",
+  "keywords": ["...", "..."],
+  ${elements.aiTranslate.checked ? '"greekSummary": "..."' : ''}
+}`;
+
+                const response = await fetch(GENSPARK_CONFIG.endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${GENSPARK_CONFIG.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: GENSPARK_CONFIG.model,
+                        messages: [
+                            { role: 'system', content: 'You are a helpful content analysis AI. Always respond with valid JSON.' },
+                            { role: 'user', content: analysisPrompt }
+                        ],
+                        temperature: 0.3,
+                        max_tokens: 1000
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`AI Analysis failed: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const aiText = result.choices[0].message.content;
+                
+                // Try to parse JSON response
+                try {
+                    return JSON.parse(aiText);
+                } catch {
+                    return {
+                        summary: aiText,
+                        keywords: []
+                    };
+                }
+                
+            } catch (error) {
+                console.error('AI Analysis error:', error);
+                return {
+                    error: error.message
+                };
+            }
+        }
+
+        function displayAiAnalysis(analysis) {
+            if (!analysis || analysis.error) {
+                elements.aiAnalysisPanel.classList.add('hidden');
+                return;
+            }
+
+            elements.aiAnalysisPanel.classList.remove('hidden');
+            
+            let html = '';
+            
+            if (analysis.summary) {
+                html += `<div class="bg-purple-50 p-4 rounded-lg">
+                    <h4 class="font-bold text-purple-900 mb-2">📝 Summary</h4>
+                    <p class="text-gray-700">${analysis.summary}</p>
+                </div>`;
+            }
+            
+            if (analysis.keywords && analysis.keywords.length > 0) {
+                html += `<div class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-bold text-blue-900 mb-2">🔑 Keywords</h4>
+                    <div class="flex flex-wrap gap-2">
+                        ${analysis.keywords.map(k => `<span class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm">${k}</span>`).join('')}
+                    </div>
+                </div>`;
+            }
+            
+            if (analysis.greekSummary) {
+                html += `<div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-bold text-green-900 mb-2">🇬🇷 Greek Translation</h4>
+                    <p class="text-gray-700">${analysis.greekSummary}</p>
+                </div>`;
+            }
+            
+            elements.aiAnalysisContent.innerHTML = html;
+        }
+
+        function displayJson(data) {
+            elements.jsonOutput.textContent = JSON.stringify(data, null, 2);
+        }
+
+        function displayArticlesPreview(articles) {
+            if (!articles || articles.length === 0) {
+                elements.articlesPreview.innerHTML = `
+                    <div class="text-center py-12 text-gray-400">
+                        <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p>No articles found</p>
+                    </div>
+                `;
+                elements.articleCount.textContent = '0';
+                return;
+            }
+
+            elements.articleCount.textContent = articles.length;
+            elements.articlesPreview.innerHTML = '';
+
+            articles.forEach((article, index) => {
+                const card = document.createElement('div');
+                card.className = 'article-card bg-gradient-to-br from-white to-gray-50 rounded-lg p-5 border-2 border-gray-200 cursor-pointer';
+                card.onclick = () => showArticleModal(article, index);
+
+                const preview = article.articleText ? article.articleText.substring(0, 200) : 'No content';
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-bold text-gray-900 text-lg">${article.articleTitle || `Article ${article.articleNo}`}</h3>
+                        <span class="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full">#${article.articleNo}</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-3 line-clamp-3">${preview}${article.articleText?.length > 200 ? '...' : ''}</p>
+                    ${article.aiSummary ? `<div class="bg-purple-50 p-3 rounded-lg mb-2">
+                        <p class="text-xs text-purple-900"><strong>AI Summary:</strong> ${article.aiSummary}</p>
+                    </div>` : ''}
+                    <div class="flex justify-between items-center text-xs text-gray-500">
+                        <span>📏 ${article.articleText?.length || 0} characters</span>
+                        <span class="text-purple-600 font-medium">Click to expand →</span>
+                    </div>
+                `;
+
+                elements.articlesPreview.appendChild(card);
+            });
+        }
+
+        function showArticleModal(article, index) {
+            elements.modalTitle.textContent = article.articleTitle || `Article ${article.articleNo}`;
+            elements.modalContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium">Article #${article.articleNo}</span>
+                        <span>📏 ${article.articleText?.length || 0} characters</span>
+                    </div>
+                    
+                    ${article.aiSummary ? `<div class="bg-purple-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-purple-900 mb-2">🤖 AI Summary</h4>
+                        <p class="text-gray-700">${article.aiSummary}</p>
+                    </div>` : ''}
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-gray-900 mb-2">📄 Full Content</h4>
+                        <div class="text-gray-700 whitespace-pre-wrap max-h-96 overflow-y-auto">${article.articleText || 'No content'}</div>
+                    </div>
+                    
+                    ${article.articleUrl ? `<div class="text-sm text-gray-600">
+                        <strong>URL:</strong> <a href="${article.articleUrl}" target="_blank" class="text-blue-600 hover:underline">${article.articleUrl}</a>
+                    </div>` : ''}
+                </div>
+            `;
+            
+            elements.articleModal.classList.remove('hidden');
+            elements.articleModal.classList.add('flex');
+        }
+
+        function closeModal() {
+            elements.articleModal.classList.add('hidden');
+            elements.articleModal.classList.remove('flex');
+        }
+
+        function copyJsonToClipboard() {
+            if (!currentJsonData) {
+                showToast('No data to copy', 'error');
+                return;
+            }
+
+            navigator.clipboard.writeText(JSON.stringify(currentJsonData, null, 2))
+                .then(() => showToast('JSON copied to clipboard!', 'success'))
+                .catch(() => showToast('Failed to copy', 'error'));
+        }
+
+        function downloadData(format) {
+            if (!currentJsonData) {
+                showToast('No data to download', 'error');
+                return;
+            }
+
+            let content, mimeType, extension;
+            const timestamp = new Date().toISOString().split('T')[0];
+
+            switch (format) {
+                case 'json':
+                    content = JSON.stringify(currentJsonData, null, 2);
+                    mimeType = 'application/json';
+                    extension = 'json';
+                    break;
+                
+                case 'csv':
+                    content = convertToCSV(currentJsonData);
+                    mimeType = 'text/csv';
+                    extension = 'csv';
+                    break;
+                
+                case 'md':
+                    content = convertToMarkdown(currentJsonData);
+                    mimeType = 'text/markdown';
+                    extension = 'md';
+                    break;
+            }
+
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `knowledge-crawler_${timestamp}.${extension}`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showToast(`Downloaded as ${extension.toUpperCase()}!`, 'success');
+        }
+
+        function convertToCSV(data) {
+            const articles = data.data?.articles || data.results?.flatMap(r => r.data?.articles || []) || [];
+            
+            let csv = 'Article No,Title,Content,AI Summary\n';
+            
+            articles.forEach(article => {
+                csv += `"${article.articleNo || ''}","${(article.articleTitle || '').replace(/"/g, '""')}","${(article.articleText || '').replace(/"/g, '""')}","${(article.aiSummary || '').replace(/"/g, '""')}"\n`;
+            });
+            
+            return csv;
+        }
+
+        function convertToMarkdown(data) {
+            let md = `# Knowledge Crawler Export\n\n`;
+            md += `**Extracted:** ${data.extractedAt || new Date().toISOString()}\n`;
+            md += `**Source:** ${data.metadata?.sourceUrl || 'Unknown'}\n\n`;
+            
+            if (data.metadata?.aiAnalysis) {
+                md += `## AI Analysis\n\n`;
+                if (data.metadata.aiAnalysis.summary) {
+                    md += `**Summary:** ${data.metadata.aiAnalysis.summary}\n\n`;
+                }
+                if (data.metadata.aiAnalysis.keywords) {
+                    md += `**Keywords:** ${data.metadata.aiAnalysis.keywords.join(', ')}\n\n`;
+                }
+            }
+            
+            md += `## Articles\n\n`;
+            
+            const articles = data.data?.articles || [];
+            articles.forEach(article => {
+                md += `### ${article.articleTitle || 'Article ' + article.articleNo}\n\n`;
+                if (article.aiSummary) {
+                    md += `> **AI Summary:** ${article.aiSummary}\n\n`;
+                }
+                md += `${article.articleText || ''}\n\n`;
+                md += `---\n\n`;
+            });
+            
+            return md;
+        }
+
+        function updateStatus(type, text, details = '') {
+            elements.statusPanel.classList.remove('hidden');
+            elements.statusText.textContent = text;
+            elements.statusDetails.textContent = details;
+
+            const icons = { loading: '🔄', success: '✅', error: '❌' };
+            elements.statusIcon.textContent = icons[type] || '🔄';
+
+            elements.loadingSpinner.classList.toggle('hidden', type !== 'loading');
+            
+            if (type === 'loading') {
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 10;
+                    if (progress > 90) progress = 90;
+                    elements.progressBar.style.width = progress + '%';
+                }, 200);
+                elements.progressBar.dataset.interval = interval;
+            } else {
+                clearInterval(elements.progressBar.dataset.interval);
+                elements.progressBar.style.width = '100%';
+            }
+        }
+
+        function hideStatus() {
+            elements.statusPanel.classList.add('hidden');
+            elements.progressBar.style.width = '0%';
+        }
+
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-in`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
+        function determinePageType(url) {
+            const types = {
+                'cylaw.org': 'legal-document',
+                'wikipedia.org': 'encyclopedia',
+                'blog': 'blog-post',
+                'news': 'news-article',
+                'product': 'product-page',
+                'docs': 'documentation'
+            };
+
+            for (const [key, type] of Object.entries(types)) {
+                if (url.includes(key)) return type;
+            }
+            
+            return 'web-page';
+        }
+    </script>
+</body>
+</html>

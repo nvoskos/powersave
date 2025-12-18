@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup GenSpark AI Knowledge Crawler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-2xl w-full">
+        <!-- Setup Card -->
+        <div id="setupCard" class="bg-white rounded-2xl shadow-2xl p-8 fade-in">
+            <div class="text-center mb-8">
+                <div class="gradient-bg w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">GenSpark AI Knowledge Crawler</h1>
+                <p class="text-gray-600">Setup your API key to get started</p>
+            </div>
+
+            <!-- Step 1: Check for existing key -->
+            <div id="step1" class="mb-6">
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-4">
+                    <div class="flex items-start">
+                        <svg class="w-6 h-6 text-blue-500 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div>
+                            <h3 class="font-semibold text-blue-900 mb-1">Checking for API key...</h3>
+                            <p class="text-sm text-blue-700" id="checkStatus">Please wait...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Enter API Key -->
+            <div id="step2" class="mb-6 hidden">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">GenSpark API Key</label>
+                <div class="relative">
+                    <input type="password" id="apiKeyInput" placeholder="gsk_..."
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-all">
+                    <button onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                        <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">
+                    Don't have an API key? 
+                    <a href="https://www.genspark.ai/settings" target="_blank" class="text-purple-600 hover:text-purple-700 font-medium">Get one here →</a>
+                </p>
+
+                <button onclick="saveApiKey()" class="w-full mt-4 gradient-bg text-white font-bold py-3 px-6 rounded-lg hover:opacity-90 transition-all">
+                    Save & Continue
+                </button>
+            </div>
+
+            <!-- Step 3: Success -->
+            <div id="step3" class="mb-6 hidden">
+                <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg mb-4">
+                    <div class="flex items-start">
+                        <svg class="w-6 h-6 text-green-500 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div>
+                            <h3 class="font-semibold text-green-900 mb-1">✅ Ready to go!</h3>
+                            <p class="text-sm text-green-700">Your API key has been configured successfully.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="launchCrawler()" class="gradient-bg text-white font-bold py-3 px-6 rounded-lg hover:opacity-90 transition-all">
+                        🚀 Launch Crawler
+                    </button>
+                    <button onclick="testApiKey()" class="bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg hover:bg-gray-300 transition-all">
+                        🧪 Test API
+                    </button>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="border-t pt-6 mt-6">
+                <h3 class="font-semibold text-gray-800 mb-3">What you can do:</h3>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Extract structured data from any webpage</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>AI-powered summarization and analysis</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Batch crawling for multiple URLs</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Export to JSON, CSV, and Markdown</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back Link -->
+        <div class="text-center mt-6">
+            <a href="tools-index.html" class="text-purple-300 hover:text-white transition-colors text-sm">
+                ← Back to Tools Index
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let apiKey = null;
+
+        // Check for existing API key on load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(checkForApiKey, 1000);
+        });
+
+        function checkForApiKey() {
+            // Check localStorage
+            const localKey = localStorage.getItem('genspark_api_key');
+            
+            if (localKey && localKey.startsWith('gsk_')) {
+                apiKey = localKey;
+                showStep3();
+                updateCheckStatus('✅ Found existing API key!', 'success');
+            } else {
+                showStep2();
+                updateCheckStatus('⚠️ No API key found. Please enter your key below.', 'warning');
+            }
+        }
+
+        function updateCheckStatus(message, type) {
+            const statusEl = document.getElementById('checkStatus');
+            statusEl.textContent = message;
+            
+            const colors = {
+                success: 'text-green-700',
+                warning: 'text-yellow-700',
+                error: 'text-red-700'
+            };
+            
+            statusEl.className = `text-sm ${colors[type] || 'text-blue-700'}`;
+        }
+
+        function showStep2() {
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+        }
+
+        function showStep3() {
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+        }
+
+        function togglePasswordVisibility() {
+            const input = document.getElementById('apiKeyInput');
+            const icon = document.getElementById('eyeIcon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>';
+            } else {
+                input.type = 'password';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>';
+            }
+        }
+
+        function saveApiKey() {
+            const input = document.getElementById('apiKeyInput');
+            const key = input.value.trim();
+
+            if (!key) {
+                showNotification('Please enter an API key', 'error');
+                return;
+            }
+
+            if (!key.startsWith('gsk_')) {
+                showNotification('Invalid API key format. Must start with gsk_', 'error');
+                return;
+            }
+
+            apiKey = key;
+            localStorage.setItem('genspark_api_key', key);
+            showNotification('API key saved successfully! ✅', 'success');
+            showStep3();
+        }
+
+        function launchCrawler() {
+            showNotification('Launching Knowledge Crawler...', 'info');
+            setTimeout(() => {
+                window.location.href = 'knowledge-crawler-genspark.html';
+            }, 500);
+        }
+
+        async function testApiKey() {
+            if (!apiKey) {
+                showNotification('No API key configured', 'error');
+                return;
+            }
+
+            showNotification('Testing API key...', 'info');
+
+            try {
+                const response = await fetch('https://www.genspark.ai/api/llm_proxy/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-5-mini',
+                        messages: [
+                            { role: 'user', content: 'Test' }
+                        ],
+                        max_tokens: 5
+                    })
+                });
+
+                if (response.ok) {
+                    showNotification('✅ API key is valid and working!', 'success');
+                } else {
+                    showNotification(`❌ API test failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`❌ Connection error: ${error.message}`, 'error');
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                warning: '#f59e0b',
+                info: '#3b82f6'
+            };
+
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: ${colors[type]};
+                color: white;
+                padding: 16px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                font-family: 'Inter', sans-serif;
+                font-size: 14px;
+                font-weight: 500;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+
+            const style = document.createElement('style');
+            style.textContent = '@keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }';
+            document.head.appendChild(style);
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(20px)';
+                notification.style.transition = 'all 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerSave AI Tools - Εργαλεία Τεχνητής Νοημοσύνης</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            scroll-behavior: smooth; 
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #2563eb 0%, #16a34a 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #2563eb, #16a34a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tool-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .tool-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15);
+            border-color: #2563eb;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        .glow {
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 via-blue-50 to-green-50 min-h-screen">
+    
+    <!-- Navigation -->
+    <nav class="fixed w-full bg-white/90 backdrop-blur-md border-b border-gray-200 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center gap-3">
+                    <div class="gradient-bg text-white p-2.5 rounded-xl shadow-lg">
+                        <i data-lucide="zap" class="w-7 h-7"></i>
+                    </div>
+                    <div>
+                        <span class="font-black text-xl tracking-tight text-gray-900">POWERSAVE</span>
+                        <span class="block text-xs text-gray-500 font-medium">AI Tools Suite</span>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center gap-4">
+                    <a href="../index.html" class="text-gray-600 hover:text-blue-600 font-medium transition">
+                        ← Πίσω στο PowerSave
+                    </a>
+                    <a href="../app.html" class="bg-gradient-to-r from-blue-600 to-green-600 text-white px-5 py-2.5 rounded-full font-bold text-sm hover:opacity-90 transition shadow-lg glow">
+                        Live Demo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <div class="inline-block mb-6 float-animation">
+                    <div class="gradient-bg p-6 rounded-3xl shadow-2xl">
+                        <i data-lucide="brain" class="w-16 h-16 text-white"></i>
+                    </div>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-black mb-6 leading-tight">
+                    <span class="gradient-text">AI Tools</span> για το<br/>
+                    PowerSave Ecosystem
+                </h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                    Εργαλεία Τεχνητής Νοημοσύνης που βελτιώνουν την παραγωγικότητα, 
+                    την επικοινωνία και την ανάλυση δεδομένων για το PowerSave Platform
+                </p>
+                
+                <!-- Stats -->
+                <div class="flex justify-center gap-8 mt-10">
+                    <div class="text-center">
+                        <div class="text-4xl font-black text-blue-600">4</div>
+                        <div class="text-sm text-gray-600 font-medium">AI Tools</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-black text-green-600">100%</div>
+                        <div class="text-sm text-gray-600 font-medium">Δωρεάν</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-black text-purple-600">⚡</div>
+                        <div class="text-sm text-gray-600 font-medium">GenSpark AI</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools Grid -->
+            <div class="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                
+                <!-- Tool 1: PDF Form Builder -->
+                <div class="tool-card bg-white rounded-2xl p-8 shadow-xl">
+                    <div class="gradient-bg w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <i data-lucide="file-text" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">PDF Form Builder</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        Δημιουργία επαγγελματικών PDF φορμών με AI βοηθό. Ιδανικό για δημοτικά έντυπα, 
+                        αιτήσεις εξοικονόμησης ενέργειας και διοικητικά έγγραφα.
+                    </p>
+                    
+                    <div class="space-y-2 mb-6">
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                            <span>13 τύποι πεδίων (text, email, dropdown, etc.)</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                            <span>AI chatbot για προτάσεις και βοήθεια</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                            <span>Export σε PDF με ένα κλικ</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
+                        <div class="text-sm font-semibold text-blue-900 mb-1">PowerSave Use Case:</div>
+                        <div class="text-sm text-blue-700">
+                            Φόρμες αίτησης για προγράμματα ενεργειακής στήριξης, τέλη σκυβάλων, ESG reporting
+                        </div>
+                    </div>
+                    
+                    <a href="chatbot-genspark.html" target="_blank" 
+                       class="block w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 px-6 rounded-xl text-center transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                        Άνοιγμα Tool →
+                    </a>
+                </div>
+
+                <!-- Tool 2: OCR & Translation -->
+                <div class="tool-card bg-white rounded-2xl p-8 shadow-xl">
+                    <div class="gradient-bg w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <i data-lucide="languages" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">OCR & Translation</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        Εξαγωγή κειμένου από εικόνες και PDF με AI μετάφραση Αγγλικά → Ελληνικά. 
+                        Ιδανικό για λογαριασμούς ενέργειας και πολύγλωσσα έγγραφα.
+                    </p>
+                    
+                    <div class="space-y-2 mb-6">
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                            <span>Υποστήριξη εικόνων & PDF (multi-page)</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                            <span>AI μετάφραση με GenSpark gpt-5-mini</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                            <span>Tesseract.js OCR engine</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-50 border border-green-100 rounded-lg p-4 mb-6">
+                        <div class="text-sm font-semibold text-green-900 mb-1">PowerSave Use Case:</div>
+                        <div class="text-sm text-green-700">
+                            Μετάφραση λογαριασμών ρεύματος για μετανάστες, OCR παλιών εγγράφων εξοικονόμησης
+                        </div>
+                    </div>
+                    
+                    <a href="ocr-translator-genspark.html" target="_blank" 
+                       class="block w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-4 px-6 rounded-xl text-center transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                        Άνοιγμα Tool →
+                    </a>
+                </div>
+
+                <!-- Tool 3: Knowledge Crawler -->
+                <div class="tool-card bg-white rounded-2xl p-8 shadow-xl">
+                    <div class="gradient-bg w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <i data-lucide="globe" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Knowledge Crawler</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        Εξαγωγή δομημένων δεδομένων από ιστοσελίδες με AI ανάλυση. 
+                        Web scraping, summarization και export σε JSON/CSV/Markdown.
+                    </p>
+                    
+                    <div class="space-y-2 mb-6">
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                            <span>Real web crawling με CORS proxy</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                            <span>AI summarization & keyword extraction</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                            <span>Batch crawling πολλαπλών URLs</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-purple-50 border border-purple-100 rounded-lg p-4 mb-6">
+                        <div class="text-sm font-semibold text-purple-900 mb-1">PowerSave Use Case:</div>
+                        <div class="text-sm text-purple-700">
+                            Εξαγωγή νομικών κειμένων ΕΣΕΚ, EU Green Deal policies, energy regulations
+                        </div>
+                    </div>
+                    
+                    <a href="setup-crawler.html" target="_blank" 
+                       class="block w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 px-6 rounded-xl text-center transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                        Setup & Launch →
+                    </a>
+                </div>
+
+                <!-- Tool 4: Nexus MindMap (Chrome Extension) -->
+                <div class="tool-card bg-white rounded-2xl p-8 shadow-xl">
+                    <div class="gradient-bg w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <i data-lucide="network" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Nexus MindMap Extractor</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        Chrome Extension για εξαγωγή και AI ανάλυση mindmaps από Google NotebookLM. 
+                        Export σε JSON/CSV με AI insights στα Ελληνικά.
+                    </p>
+                    
+                    <div class="space-y-2 mb-6">
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                            <span>Chrome extension για NotebookLM</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                            <span>4 τύποι AI ανάλυσης (Summary, Insights, Q&A, Expand)</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                            <span>Interactive viewer με visualizations</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-orange-50 border border-orange-100 rounded-lg p-4 mb-6">
+                        <div class="text-sm font-semibold text-orange-900 mb-1">PowerSave Use Case:</div>
+                        <div class="text-sm text-orange-700">
+                            Ανάλυση policy mindmaps, documentation structures, stakeholder mapping
+                        </div>
+                    </div>
+                    
+                    <a href="https://github.com/nvoskos/nexus-mindmap-extractor#readme" target="_blank" 
+                       class="block w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-bold py-4 px-6 rounded-xl text-center transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                        Οδηγός Εγκατάστασης →
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- Technical Info -->
+            <div class="mt-16 bg-white rounded-2xl p-8 shadow-xl max-w-4xl mx-auto border-2 border-blue-100">
+                <div class="flex items-start gap-4">
+                    <div class="gradient-bg p-3 rounded-xl flex-shrink-0">
+                        <i data-lucide="info" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">🔑 API Configuration</h3>
+                        <p class="text-gray-600 mb-4">
+                            Όλα τα AI tools χρησιμοποιούν το <strong>GenSpark OpenAI Proxy</strong> με το μοντέλο 
+                            <code class="bg-gray-100 px-2 py-1 rounded">gpt-5-mini</code>.
+                        </p>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div class="flex items-start gap-3">
+                                <i data-lucide="key" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+                                <div>
+                                    <div class="font-semibold text-blue-900 mb-1">Χρειάζεται GenSpark API Key</div>
+                                    <div class="text-sm text-blue-700 mb-2">
+                                        Το API key ξεκινά με <code class="bg-blue-100 px-1 rounded">gsk_...</code> και 
+                                        αποθηκεύεται τοπικά στο localStorage του browser σου.
+                                    </div>
+                                    <a href="https://www.genspark.ai/settings" target="_blank" 
+                                       class="text-blue-600 hover:text-blue-800 font-semibold text-sm underline">
+                                        Πάρε το API key εδώ →
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Integration Section -->
+    <section class="py-16 bg-gradient-to-br from-blue-900 to-green-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">Ενσωμάτωση με PowerSave</h2>
+            <p class="text-xl text-blue-100 mb-10 max-w-3xl mx-auto">
+                Τα AI tools είναι σχεδιασμένα να υποστηρίζουν τις λειτουργίες του PowerSave ecosystem
+            </p>
+            
+            <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+                    <i data-lucide="file-check" class="w-10 h-10 mx-auto mb-4 text-blue-300"></i>
+                    <h3 class="font-bold text-lg mb-2">Δημοτικά Έγγραφα</h3>
+                    <p class="text-sm text-blue-200">Δημιουργία φορμών για waste fees, energy applications</p>
+                </div>
+                
+                <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+                    <i data-lucide="book-open" class="w-10 h-10 mx-auto mb-4 text-green-300"></i>
+                    <h3 class="font-bold text-lg mb-2">Policy Analysis</h3>
+                    <p class="text-sm text-green-200">Crawling & summarization νομικών κειμένων ΕΣΕΚ</p>
+                </div>
+                
+                <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+                    <i data-lucide="users" class="w-10 h-10 mx-auto mb-4 text-purple-300"></i>
+                    <h3 class="font-bold text-lg mb-2">Πολύγλωσση Υποστήριξη</h3>
+                    <p class="text-sm text-purple-200">OCR & translation για μετανάστες και ευάλωατες ομάδες</p>
+                </div>
+            </div>
+
+            <div class="mt-10">
+                <a href="../index.html" 
+                   class="inline-block bg-white text-blue-900 px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-50 transition shadow-2xl">
+                    Επιστροφή στο PowerSave Platform
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="gradient-bg text-white p-2 rounded-lg">
+                    <i data-lucide="zap" class="w-5 h-5"></i>
+                </div>
+                <span class="font-bold text-lg">POWERSAVE AI TOOLS</span>
+            </div>
+            <p class="text-gray-400 text-sm mb-4">
+                Powered by GenSpark AI • Part of PowerSave Impact Platform
+            </p>
+            <div class="flex justify-center gap-6 text-sm text-gray-400">
+                <a href="https://github.com/nvoskos/powersave" target="_blank" class="hover:text-white transition">
+                    GitHub Repository
+                </a>
+                <span>•</span>
+                <a href="../powersave_whitepaper_v3.md" target="_blank" class="hover:text-white transition">
+                    White Paper 2025
+                </a>
+                <span>•</span>
+                <a href="../index.html" class="hover:text-white transition">
+                    PowerSave Platform
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

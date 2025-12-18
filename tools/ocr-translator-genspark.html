@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR & Translation Tool - GenSpark AI Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex-1">
+                    <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        OCR & Μετάφραση Tool
+                    </h1>
+                    <p class="text-gray-600 mt-1">Upload an image or PDF → Extract text (OCR) → Translate to Greek</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-xs font-semibold rounded-full">
+                        ✨ GenSpark AI
+                    </span>
+                    <button onclick="toggleApiSettings()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="API Settings">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- API Settings Panel -->
+            <div id="apiSettingsPanel" class="hidden mb-6 bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+                <h3 class="font-semibold text-indigo-900 mb-2">GenSpark API Configuration</h3>
+                <p class="text-sm text-indigo-700 mb-3">Translation powered by GenSpark AI (gpt-5-mini model)</p>
+                <div class="flex gap-2">
+                    <input type="text" id="apiKeyInput" placeholder="Enter GenSpark API key (optional)" 
+                           class="flex-1 px-3 py-2 border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                    <button onclick="saveApiKey()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium">
+                        Save
+                    </button>
+                </div>
+                <p class="text-xs text-indigo-600 mt-2">💡 A default API key is already configured. Add your own key for higher limits.</p>
+            </div>
+            
+            <!-- File Upload Section -->
+            <div class="mb-8">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-500 transition-colors">
+                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <input type="file" id="fileInput" accept="image/*,.pdf" class="hidden">
+                    <label for="fileInput" class="cursor-pointer">
+                        <span class="mt-2 block text-sm font-medium text-gray-900">
+                            Click to upload an image or PDF, or drag and drop
+                        </span>
+                        <span class="mt-1 block text-xs text-gray-500">PNG, JPG, GIF, PDF up to 10MB</span>
+                    </label>
+                </div>
+                
+                <!-- File Preview -->
+                <div id="imagePreview" class="mt-4 hidden">
+                    <h3 class="text-lg font-semibold mb-2">Uploaded File:</h3>
+                    <div id="previewContainer">
+                        <img id="previewImg" class="max-w-full h-auto rounded-lg shadow-md hidden" alt="Preview">
+                        <div id="pdfInfo" class="hidden bg-gray-100 p-4 rounded-lg">
+                            <div class="flex items-center">
+                                <svg class="w-8 h-8 text-red-600 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M10,19L12,15H13L15,19H13.5L13.1,18H11.9L11.5,19H10M11.3,16.5L10.9,17.5H13.1L12.7,16.5L12,15L11.3,16.5Z"/>
+                                </svg>
+                                <div>
+                                    <p class="font-semibold text-gray-800">PDF Document</p>
+                                    <p id="pdfPageCount" class="text-sm text-gray-600"></p>
+                                </div>
+                            </div>
+                            <div id="pdfPreviewPages" class="mt-4 grid grid-cols-2 gap-2 max-h-96 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Process Button -->
+            <button id="processBtn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed mb-8" disabled>
+                Process Image (OCR + Translation)
+            </button>
+
+            <!-- Progress Indicator -->
+            <div id="progressSection" class="hidden mb-8">
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                        <span id="progressText" class="text-blue-700 font-medium">Processing...</span>
+                    </div>
+                    <div class="mt-3 bg-gray-200 rounded-full h-2.5">
+                        <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" class="hidden space-y-6">
+                <!-- OCR Result -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold mb-3 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Extracted Text (OCR)
+                    </h3>
+                    <div id="ocrResult" class="bg-white p-4 rounded border border-gray-200 min-h-[100px] whitespace-pre-wrap"></div>
+                    <button onclick="copyText('ocrResult')" class="mt-3 text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition-colors">
+                        📋 Copy Text
+                    </button>
+                </div>
+
+                <!-- Translation Result -->
+                <div class="bg-blue-50 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold mb-3 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                        </svg>
+                        Greek Translation (Ελληνική Μετάφραση)
+                    </h3>
+                    <div id="translationResult" class="bg-white p-4 rounded border border-blue-200 min-h-[100px] whitespace-pre-wrap"></div>
+                    <button onclick="copyText('translationResult')" class="mt-3 text-sm bg-blue-200 hover:bg-blue-300 px-3 py-1 rounded transition-colors">
+                        📋 Copy Translation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Python Script Alternative -->
+            <div class="mt-8 border-t pt-6">
+                <details class="cursor-pointer">
+                    <summary class="font-semibold text-gray-700 hover:text-indigo-600">
+                        💻 Want the Python script instead?
+                    </summary>
+                    <div class="mt-4 bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto">
+                        <pre class="text-sm"><code># Python Script for OCR and Translation (Images & PDFs)
+# Install requirements: 
+# pip install pytesseract pillow googletrans==4.0.0-rc1 PyPDF2 pdf2image
+
+import pytesseract
+from PIL import Image
+from googletrans import Translator
+import sys
+import os
+from PyPDF2 import PdfReader
+from pdf2image import convert_from_path
+
+def ocr_image(image_path):
+    """Perform OCR on an image file"""
+    img = Image.open(image_path)
+    text = pytesseract.image_to_string(img, lang='eng')
+    return text
+
+def ocr_pdf(pdf_path):
+    """Perform OCR on a PDF file"""
+    print(f"Converting PDF to images...")
+    # Convert PDF pages to images
+    images = convert_from_path(pdf_path)
+    
+    all_text = []
+    for i, image in enumerate(images, 1):
+        print(f"Processing page {i}/{len(images)}...")
+        text = pytesseract.image_to_string(image, lang='eng')
+        all_text.append(f"\n--- Page {i} ---\n{text}")
+    
+    return '\n'.join(all_text)
+
+def translate_to_greek(text):
+    """Translate text from English to Greek"""
+    translator = Translator()
+    # Handle long texts by splitting into chunks
+    max_chars = 5000
+    if len(text) <= max_chars:
+        translation = translator.translate(text, src='en', dest='el')
+        return translation.text
+    
+    # Split and translate in chunks
+    chunks = [text[i:i+max_chars] for i in range(0, len(text), max_chars)]
+    translated_chunks = []
+    for chunk in chunks:
+        translation = translator.translate(chunk, src='en', dest='el')
+        translated_chunks.append(translation.text)
+    
+    return ' '.join(translated_chunks)
+
+def ocr_and_translate(file_path):
+    """Main function to perform OCR and translation"""
+    # Determine file type
+    ext = os.path.splitext(file_path)[1].lower()
+    
+    # Step 1: OCR
+    print("Performing OCR...")
+    if ext == '.pdf':
+        text = ocr_pdf(file_path)
+    elif ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff']:
+        text = ocr_image(file_path)
+    else:
+        raise ValueError(f"Unsupported file type: {ext}")
+    
+    print(f"Extracted text:\n{text}\n")
+    
+    # Step 2: Translate to Greek
+    print("Translating to Greek...")
+    translation = translate_to_greek(text)
+    print(f"Greek translation:\n{translation}")
+    
+    # Save results to files
+    with open('extracted_text.txt', 'w', encoding='utf-8') as f:
+        f.write(text)
+    with open('greek_translation.txt', 'w', encoding='utf-8') as f:
+        f.write(translation)
+    
+    print("\nResults saved to 'extracted_text.txt' and 'greek_translation.txt'")
+    
+    return text, translation
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python ocr_translate.py <file_path>")
+        print("Supports: Images (JPG, PNG, etc.) and PDF files")
+        sys.exit(1)
+    
+    file_path = sys.argv[1]
+    if not os.path.exists(file_path):
+        print(f"Error: File '{file_path}' not found")
+        sys.exit(1)
+    
+    try:
+        ocr_and_translate(file_path)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)</code></pre>
+                    </div>
+                    <button onclick="copyPythonScript()" class="mt-3 text-sm bg-gray-700 text-white hover:bg-gray-800 px-3 py-1 rounded transition-colors">
+                        📋 Copy Python Script
+                    </button>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        let selectedFile = null;
+        let isPDF = false;
+        const fileInput = document.getElementById('fileInput');
+        const processBtn = document.getElementById('processBtn');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const pdfInfo = document.getElementById('pdfInfo');
+        const progressSection = document.getElementById('progressSection');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const results = document.getElementById('results');
+
+        // File input handler
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            handleFile(file);
+        });
+
+        function handleFile(file) {
+            if (!file) return;
+            
+            selectedFile = file;
+            imagePreview.classList.remove('hidden');
+            processBtn.disabled = false;
+            
+            if (file.type === 'application/pdf') {
+                isPDF = true;
+                previewImg.classList.add('hidden');
+                pdfInfo.classList.remove('hidden');
+                previewPDF(file);
+            } else if (file.type.startsWith('image/')) {
+                isPDF = false;
+                pdfInfo.classList.add('hidden');
+                previewImg.classList.remove('hidden');
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImg.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function previewPDF(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            const numPages = pdf.numPages;
+            
+            document.getElementById('pdfPageCount').textContent = `${numPages} page${numPages > 1 ? 's' : ''}`;
+            
+            const pdfPreviewPages = document.getElementById('pdfPreviewPages');
+            pdfPreviewPages.innerHTML = '';
+            
+            // Show preview of first few pages
+            const pagesToPreview = Math.min(4, numPages);
+            for (let i = 1; i <= pagesToPreview; i++) {
+                const page = await pdf.getPage(i);
+                const scale = 0.5;
+                const viewport = page.getViewport({ scale });
+                
+                const canvas = document.createElement('canvas');
+                canvas.className = 'border border-gray-300 rounded';
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                
+                await page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                }).promise;
+                
+                const pageContainer = document.createElement('div');
+                pageContainer.className = 'relative';
+                pageContainer.innerHTML = `
+                    <div class="absolute top-0 left-0 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-br">
+                        Page ${i}
+                    </div>
+                `;
+                pageContainer.appendChild(canvas);
+                pdfPreviewPages.appendChild(pageContainer);
+            }
+            
+            if (numPages > pagesToPreview) {
+                const morePages = document.createElement('div');
+                morePages.className = 'col-span-2 text-center text-gray-600 text-sm py-2';
+                morePages.textContent = `... and ${numPages - pagesToPreview} more page${numPages - pagesToPreview > 1 ? 's' : ''}`;
+                pdfPreviewPages.appendChild(morePages);
+            }
+        }
+
+        // Drag and drop
+        const dropZone = document.querySelector('.border-dashed');
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-indigo-500', 'bg-indigo-50');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) {
+                fileInput.files = e.dataTransfer.files;
+                handleFile(file);
+            }
+        });
+
+        // Process button handler
+        processBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            processBtn.disabled = true;
+            progressSection.classList.remove('hidden');
+            results.classList.add('hidden');
+            
+            try {
+                let extractedText = '';
+                
+                if (isPDF) {
+                    // Process PDF
+                    progressText.textContent = 'Processing PDF...';
+                    progressBar.style.width = '10%';
+                    
+                    const arrayBuffer = await selectedFile.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                    const numPages = pdf.numPages;
+                    
+                    progressText.textContent = `Extracting text from ${numPages} page${numPages > 1 ? 's' : ''}...`;
+                    progressBar.style.width = '20%';
+                    
+                    // Process each page
+                    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                        const page = await pdf.getPage(pageNum);
+                        const scale = 2.0; // Higher scale for better OCR accuracy
+                        const viewport = page.getViewport({ scale });
+                        
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        
+                        await page.render({
+                            canvasContext: context,
+                            viewport: viewport
+                        }).promise;
+                        
+                        progressText.textContent = `Performing OCR on page ${pageNum} of ${numPages}...`;
+                        const progress = 20 + (pageNum / numPages * 50);
+                        progressBar.style.width = `${progress}%`;
+                        
+                        // Convert canvas to blob for Tesseract
+                        const blob = await new Promise(resolve => canvas.toBlob(resolve));
+                        
+                        const result = await Tesseract.recognize(
+                            blob,
+                            'eng',
+                            {
+                                logger: m => {
+                                    if (m.status === 'recognizing text') {
+                                        const pageProgress = 20 + ((pageNum - 1 + m.progress) / numPages * 50);
+                                        progressBar.style.width = `${pageProgress}%`;
+                                    }
+                                }
+                            }
+                        );
+                        
+                        if (result.data.text) {
+                            extractedText += `\n--- Page ${pageNum} ---\n${result.data.text}\n`;
+                        }
+                    }
+                } else {
+                    // Process Image
+                    progressText.textContent = 'Initializing OCR...';
+                    progressBar.style.width = '10%';
+                    
+                    progressText.textContent = 'Performing OCR... This may take a moment...';
+                    progressBar.style.width = '30%';
+                    
+                    const result = await Tesseract.recognize(
+                        selectedFile,
+                        'eng',
+                        {
+                            logger: m => {
+                                if (m.status === 'recognizing text') {
+                                    const progress = Math.round(30 + (m.progress * 40));
+                                    progressBar.style.width = `${progress}%`;
+                                }
+                            }
+                        }
+                    );
+                    
+                    extractedText = result.data.text;
+                }
+                
+                document.getElementById('ocrResult').textContent = extractedText || 'No text found in the file.';
+                
+                // Step 2: Translation
+                progressText.textContent = 'Translating to Greek...';
+                progressBar.style.width = '80%';
+                
+                if (extractedText) {
+                    const translatedText = await translateToGreek(extractedText);
+                    document.getElementById('translationResult').textContent = translatedText;
+                } else {
+                    document.getElementById('translationResult').textContent = 'Δεν βρέθηκε κείμενο για μετάφραση.';
+                }
+                
+                progressBar.style.width = '100%';
+                progressText.textContent = 'Complete!';
+                
+                setTimeout(() => {
+                    progressSection.classList.add('hidden');
+                    results.classList.remove('hidden');
+                    processBtn.disabled = false;
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                progressText.textContent = 'Error occurred. Please try again.';
+                progressBar.classList.add('bg-red-600');
+                setTimeout(() => {
+                    progressSection.classList.add('hidden');
+                    progressBar.classList.remove('bg-red-600');
+                    processBtn.disabled = false;
+                }, 3000);
+            }
+        });
+
+        // Translation function using GenSpark AI (gpt-5-mini - high quality!)
+        async function translateToGreek(text) {
+            try {
+                // GenSpark API configuration
+                const API_KEY = localStorage.getItem('genspark_api_key') || 'gsk-eyJjb2dlbl9pZCI6ICIyYjhjY2E4Ny03YzJjLTRhNDMtOWEzMC03ZjA2NzcxYWQwYWUiLCAia2V5X2lkIjogIjU0NzA2OTc1LTU3ZTctNDllOS05ZTU0LTNkY2JiNWM2ZDQ0MiJ9fFEp-1p1MyDUh_StQuOSM4530mHDXxfECbzca5ZkPYHD';
+                const API_URL = 'https://www.genspark.ai/api/llm_proxy/v1/chat/completions';
+                
+                // Call GenSpark AI for translation
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-5-mini',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: 'You are a professional translator. Translate the given English text to Greek. Maintain the original formatting, tone, and meaning. Only return the translated text, nothing else.'
+                            },
+                            {
+                                role: 'user',
+                                content: `Translate this English text to Greek:\n\n${text}`
+                            }
+                        ],
+                        temperature: 0.3,
+                        max_tokens: 4000
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.choices[0].message.content.trim();
+                
+            } catch (error) {
+                console.error('Translation error:', error);
+                return '❌ Translation failed. Please check your GenSpark API key or try again.';
+            }
+        }
+
+        // API Settings Functions
+        function toggleApiSettings() {
+            const panel = document.getElementById('apiSettingsPanel');
+            panel.classList.toggle('hidden');
+        }
+
+        function saveApiKey() {
+            const input = document.getElementById('apiKeyInput');
+            const apiKey = input.value.trim();
+            
+            if (apiKey) {
+                localStorage.setItem('genspark_api_key', apiKey);
+                alert('✅ GenSpark API key saved successfully!');
+                toggleApiSettings();
+            } else {
+                alert('⚠️ Please enter a valid API key');
+            }
+        }
+
+        // Load saved API key on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('genspark_api_key');
+            if (savedKey && savedKey !== 'gsk-eyJjb2dlbl9pZCI6ICIyYjhjY2E4Ny03YzJjLTRhNDMtOWEzMC03ZjA2NzcxYWQwYWUiLCAia2V5X2lkIjogIjU0NzA2OTc1LTU3ZTctNDllOS05ZTU0LTNkY2JiNWM2ZDQ0MiJ9fFEp-1p1MyDUh_StQuOSM4530mHDXxfECbzca5ZkPYHD') {
+                document.getElementById('apiKeyInput').value = savedKey;
+            }
+        });
+
+        // Copy functions
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Text copied to clipboard!');
+            });
+        }
+
+        function copyPythonScript() {
+            const script = `# Python Script for OCR and Translation (Images & PDFs)
+# Install requirements: 
+# pip install pytesseract pillow googletrans==4.0.0-rc1 PyPDF2 pdf2image
+
+import pytesseract
+from PIL import Image
+from googletrans import Translator
+import sys
+import os
+from PyPDF2 import PdfReader
+from pdf2image import convert_from_path
+
+def ocr_image(image_path):
+    """Perform OCR on an image file"""
+    img = Image.open(image_path)
+    text = pytesseract.image_to_string(img, lang='eng')
+    return text
+
+def ocr_pdf(pdf_path):
+    """Perform OCR on a PDF file"""
+    print(f"Converting PDF to images...")
+    # Convert PDF pages to images
+    images = convert_from_path(pdf_path)
+    
+    all_text = []
+    for i, image in enumerate(images, 1):
+        print(f"Processing page {i}/{len(images)}...")
+        text = pytesseract.image_to_string(image, lang='eng')
+        all_text.append(f"\\n--- Page {i} ---\\n{text}")
+    
+    return '\\n'.join(all_text)
+
+def translate_to_greek(text):
+    """Translate text from English to Greek"""
+    translator = Translator()
+    # Handle long texts by splitting into chunks
+    max_chars = 5000
+    if len(text) <= max_chars:
+        translation = translator.translate(text, src='en', dest='el')
+        return translation.text
+    
+    # Split and translate in chunks
+    chunks = [text[i:i+max_chars] for i in range(0, len(text), max_chars)]
+    translated_chunks = []
+    for chunk in chunks:
+        translation = translator.translate(chunk, src='en', dest='el')
+        translated_chunks.append(translation.text)
+    
+    return ' '.join(translated_chunks)
+
+def ocr_and_translate(file_path):
+    """Main function to perform OCR and translation"""
+    # Determine file type
+    ext = os.path.splitext(file_path)[1].lower()
+    
+    # Step 1: OCR
+    print("Performing OCR...")
+    if ext == '.pdf':
+        text = ocr_pdf(file_path)
+    elif ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff']:
+        text = ocr_image(file_path)
+    else:
+        raise ValueError(f"Unsupported file type: {ext}")
+    
+    print(f"Extracted text:\\n{text}\\n")
+    
+    # Step 2: Translate to Greek
+    print("Translating to Greek...")
+    translation = translate_to_greek(text)
+    print(f"Greek translation:\\n{translation}")
+    
+    # Save results to files
+    with open('extracted_text.txt', 'w', encoding='utf-8') as f:
+        f.write(text)
+    with open('greek_translation.txt', 'w', encoding='utf-8') as f:
+        f.write(translation)
+    
+    print("\\nResults saved to 'extracted_text.txt' and 'greek_translation.txt'")
+    
+    return text, translation
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python ocr_translate.py <file_path>")
+        print("Supports: Images (JPG, PNG, etc.) and PDF files")
+        sys.exit(1)
+    
+    file_path = sys.argv[1]
+    if not os.path.exists(file_path):
+        print(f"Error: File '{file_path}' not found")
+        sys.exit(1)
+    
+    try:
+        ocr_and_translate(file_path)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)`;
+            
+            navigator.clipboard.writeText(script).then(() => {
+                alert('Python script copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>
