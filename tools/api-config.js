@@ -26,7 +26,7 @@ class GenSparkConfig {
     detectApiKey() {
         // 1. Check localStorage
         const localKey = localStorage.getItem('genspark_api_key');
-        if (localKey && localKey.startsWith('gsk_')) {
+        if (localKey && localKey.startsWith('gsk-')) {
             return localKey;
         }
 
@@ -45,7 +45,7 @@ class GenSparkConfig {
         // 3. Check URL parameters (for testing only - not secure for production!)
         const urlParams = new URLSearchParams(window.location.search);
         const urlKey = urlParams.get('api_key');
-        if (urlKey && urlKey.startsWith('gsk_')) {
+        if (urlKey && urlKey.startsWith('gsk-')) {
             return urlKey;
         }
 
@@ -61,18 +61,18 @@ class GenSparkConfig {
     promptForApiKey() {
         const key = prompt(
             '🔑 GenSpark API Key Required\n\n' +
-            'Please enter your GenSpark API key (starts with gsk_...):\n\n' +
+            'Please enter your GenSpark API key (starts with gsk-...):\n\n' +
             'Get your key from: https://www.genspark.ai/settings\n\n' +
             'Your key will be saved locally for future use.'
         );
 
-        if (key && key.trim().startsWith('gsk_')) {
+        if (key && key.trim().startsWith('gsk-')) {
             this.apiKey = key.trim();
             this.saveToLocalStorage();
             this.showNotification('API key saved successfully! ✅', 'success');
             return true;
         } else if (key) {
-            this.showNotification('Invalid API key format. Must start with gsk_', 'error');
+            this.showNotification('Invalid API key format. Must start with gsk-', 'error');
             return false;
         }
         return false;
