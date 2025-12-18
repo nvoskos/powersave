@@ -4,6 +4,24 @@ The first operational system for energy behavioral change and social cohesion in
 
 [![CI/CD](https://github.com/nvoskos/powersave/workflows/Backend%20CI/badge.svg)](https://github.com/nvoskos/powersave/actions)
 [![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
+[![Deploy](https://img.shields.io/badge/deploy-ready-brightgreen.svg)](DEPLOYMENT.md)
+
+## 🚀 **Quick Deploy**
+
+**Deploy to GitHub Pages in 2 minutes:**
+
+1. Push latest changes: `git push origin main`
+2. Enable GitHub Pages: [Settings → Pages](https://github.com/nvoskos/powersave/settings/pages)
+3. Visit: `https://nvoskos.github.io/powersave/`
+
+**Or use the interactive script:**
+```bash
+./deploy.sh
+```
+
+📖 **Full deployment guide:** [DEPLOYMENT.md](DEPLOYMENT.md)
+
+---
 
 ## 🎯 Vision
 
@@ -35,6 +53,49 @@ PowerSave transforms "negative energy" (waste, poverty, grid stress) into "posit
 │               └──────────┘  └───────┘  └────────┘       │
 └─────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## 🧠 AI Tools Suite
+
+PowerSave includes **5 AI-powered tools** built with GenSpark AI:
+
+### 1. 🧠 **MindMap Agent** (NEW!)
+AI-powered mind mapping with conversational interface
+- Create mindmaps via natural language
+- Smart context understanding
+- Export: JSON, CSV, Markdown
+- **Live:** [MindMap Agent](tools/mindmap-agent-genspark.html)
+
+### 2. 📄 **PDF Form Builder**
+Build professional forms with AI assistance
+- 13 field types (text, email, dropdown, etc.)
+- AI chatbot for suggestions
+- Export to PDF
+- **Live:** [PDF Form Builder](tools/chatbot-genspark.html)
+
+### 3. 🔤 **OCR & Translation**
+Extract text from images/PDFs with AI translation
+- Multi-page PDF support
+- Greek ↔ English translation
+- Tesseract.js OCR engine
+- **Live:** [OCR Tool](tools/ocr-translator-genspark.html)
+
+### 4. 🌐 **Knowledge Crawler**
+Web scraping with AI analysis
+- Real web crawling + CORS proxy
+- AI summarization & keywords
+- Batch crawling support
+- **Live:** [Setup Crawler](tools/setup-crawler.html)
+
+### 5. 🔗 **Nexus MindMap Extractor**
+Chrome extension for NotebookLM analysis
+- 4 AI analysis types
+- JSON/CSV export
+- **Install:** [GitHub Guide](https://github.com/nvoskos/nexus-mindmap-extractor)
+
+**All tools powered by:** GenSpark OpenAI Proxy (`gpt-5-mini`)  
+**Tools Hub:** [/tools/index.html](tools/index.html)
 
 ---
 
