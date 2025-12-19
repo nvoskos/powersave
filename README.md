@@ -58,7 +58,7 @@ PowerSave transforms "negative energy" (waste, poverty, grid stress) into "posit
 
 ## 🧠 AI Tools Suite
 
-PowerSave includes **5 AI-powered tools** built with GenSpark AI:
+PowerSave includes **5 AI-powered tools** with **OpenAI API support**:
 
 ### 1. 🧠 **MindMap Agent** (NEW!)
 AI-powered mind mapping with conversational interface
@@ -94,7 +94,8 @@ Chrome extension for NotebookLM analysis
 - JSON/CSV export
 - **Install:** [GitHub Guide](https://github.com/nvoskos/nexus-mindmap-extractor)
 
-**All tools powered by:** GenSpark OpenAI Proxy (`gpt-5-mini`)  
+**AI Backend:** OpenAI API (supports `gpt-3.5-turbo`, `gpt-4`, `gpt-4-turbo`)  
+**Setup Guide:** [OPENAI_SETUP.md](OPENAI_SETUP.md)  
 **Tools Hub:** [/tools/index.html](tools/index.html)
 
 ---

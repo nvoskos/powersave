@@ -14,12 +14,12 @@ const AI_CONFIG = {
     // Use 'direct' for standalone HTML files (may have CORS issues)
     mode: 'proxy',
     
-    // Direct Mode Configuration (GenSpark API)
+    // Direct Mode Configuration (OpenAI API)
     direct: {
-        endpoint: 'https://www.genspark.ai/api/llm_proxy/v1/chat/completions',
+        endpoint: 'https://api.openai.com/v1/chat/completions',
         // Note: API key should be provided by user or stored in localStorage
-        apiKey: localStorage.getItem('gensparkApiKey') || '',
-        model: 'gpt-5-mini'
+        apiKey: localStorage.getItem('openaiApiKey') || '',
+        model: 'gpt-3.5-turbo'
     },
     
     // Proxy Mode Configuration (Local Backend)
@@ -27,7 +27,7 @@ const AI_CONFIG = {
         endpoint: 'http://localhost:8080/api/ai/chat',
         // No API key needed - handled by backend
         apiKey: null,
-        model: 'gpt-5-mini'
+        model: 'gpt-3.5-turbo'
     },
     
     // Default AI parameters
@@ -103,7 +103,7 @@ async function callAI(messages, options = {}) {
                 );
             } else {
                 throw new Error(
-                    'Cannot connect to GenSpark API. ' +
+                    'Cannot connect to OpenAI API. ' +
                     'This might be a CORS issue. Consider using proxy mode instead.'
                 );
             }
@@ -144,14 +144,14 @@ function setAIMode(mode) {
 
 /**
  * Set API key for direct mode
- * @param {string} apiKey - GenSpark API key (gsk-...)
+ * @param {string} apiKey - OpenAI API key (sk-...) or GenSpark key (gsk-...)
  */
 function setAPIKey(apiKey) {
-    if (!apiKey.startsWith('gsk-')) {
-        throw new Error('Invalid API key format. Must start with gsk-');
+    if (!apiKey.startsWith('sk-') && !apiKey.startsWith('gsk-')) {
+        throw new Error('Invalid API key format. Must start with sk- (OpenAI) or gsk- (GenSpark)');
     }
     AI_CONFIG.direct.apiKey = apiKey;
-    localStorage.setItem('gensparkApiKey', apiKey);
+    localStorage.setItem('openaiApiKey', apiKey);
     console.log('API key updated');
 }
 

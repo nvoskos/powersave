@@ -29,7 +29,7 @@ load_dotenv()
 
 # Configuration
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
-OPENAI_BASE_URL = os.getenv('OPENAI_BASE_URL', 'https://www.genspark.ai/api/llm_proxy/v1')
+OPENAI_BASE_URL = os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1')
 AI_PROXY_PORT = int(os.getenv('AI_PROXY_PORT', '8080'))
 AI_PROXY_CORS_ORIGINS = os.getenv('AI_PROXY_CORS_ORIGINS', '*')
 
@@ -42,7 +42,7 @@ if not OPENAI_API_KEY:
 # Initialize FastAPI app
 app = FastAPI(
     title="PowerSave AI Proxy",
-    description="CORS proxy for GenSpark AI API",
+    description="CORS proxy for OpenAI API (supports OpenAI & GenSpark)",
     version="1.0.0"
 )
 
@@ -61,7 +61,7 @@ class Message(BaseModel):
     content: str
 
 class ChatRequest(BaseModel):
-    model: str = "gpt-5-mini"
+    model: str = "gpt-3.5-turbo"
     messages: List[Message]
     temperature: Optional[float] = 0.7
     max_tokens: Optional[int] = 2000
@@ -190,7 +190,7 @@ async def test_api():
                     "Authorization": f"Bearer {OPENAI_API_KEY}"
                 },
                 json={
-                    "model": "gpt-5-mini",
+                    "model": "gpt-3.5-turbo",
                     "messages": [{"role": "user", "content": "Hello!"}],
                     "max_tokens": 10
                 }

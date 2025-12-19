@@ -2,17 +2,18 @@
 
 ## 🎯 Problem: CORS & API Access
 
-Browser-based AI tools cannot directly call GenSpark API due to:
+Browser-based AI tools cannot directly call OpenAI API due to:
 - **CORS restrictions** (Cross-Origin Resource Sharing)
-- **Cloudflare protection** blocking direct requests
+- **API key exposure** in browser code
 
 ## ✅ Solution: Backend Proxy Server
 
 We created a simple FastAPI proxy server that:
 - ✅ Runs locally on your machine
-- ✅ Handles API authentication
+- ✅ Secures your OpenAI API key
 - ✅ Bypasses CORS restrictions
 - ✅ Works with all AI tools
+- ✅ Supports OpenAI & GenSpark APIs
 
 ---
 
@@ -33,14 +34,26 @@ pip install -r requirements-ai-proxy.txt
 # Copy example environment file
 cp .env.example .env
 
-# Edit .env and set your GenSpark API key
-# OPENAI_API_KEY=gsk-your-actual-key-here
+# Edit .env and set your OpenAI API key
+nano .env
 ```
 
-Or use the current working key:
+**Required configuration in `.env`:**
+
 ```bash
-echo 'OPENAI_API_KEY=gsk-eyJjb2dlbl9pZCI6ICIyYjhjY2E4Ny03YzJjLTRhNDMtOWEzMC03ZjA2NzcxYWQwYWUiLCAia2V5X2lkIjogIjk2NDg4ZWRlLTEzOGYtNDE4Yy05NGVhLThkZjUxNmZkZTBhOSJ9fGu39u0z0M7qd-AbN5e7qZYXn2FRNkekLHwvDbwani-c' >> .env
-echo 'OPENAI_BASE_URL=https://www.genspark.ai/api/llm_proxy/v1' >> .env
+# Get your API key from: https://platform.openai.com/api-keys
+OPENAI_API_KEY=sk-proj-your-openai-key-here
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-3.5-turbo
+```
+
+**Alternative: Use GenSpark (Optional)**
+
+```bash
+# Get key from: https://www.genspark.ai/settings
+OPENAI_API_KEY=gsk-your-genspark-key-here
+OPENAI_BASE_URL=https://www.genspark.ai/api/llm_proxy/v1
+OPENAI_MODEL=gpt-5-mini
 ```
 
 ### Step 3: Start the Proxy Server
@@ -54,8 +67,8 @@ You should see:
 ============================================================
 🚀 PowerSave AI Proxy Server
 ============================================================
-📡 API Base URL: https://www.genspark.ai/api/llm_proxy/v1
-🔑 API Key: gsk-eyJjb2dlbl9pZCI...
+📡 API Base URL: https://api.openai.com/v1
+🔑 API Key: sk-proj-...
 🌐 Server Port: 8080
 🔓 CORS Origins: *
 ============================================================
